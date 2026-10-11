@@ -1,5 +1,6 @@
 import { D, type Dec } from '../lib/decimal';
 import { IssueCollector } from '../validation/parse';
+import { confidenceLevel } from './evidence';
 import { APPROVAL_STATUSES, type EstimateInput, type Rate, type Ratebook, type Scope, type SelectedRate } from '../types';
 
 export const STALE_AFTER_DAYS = 365;
@@ -37,19 +38,53 @@ export interface ResolvedRate {
   source: Rate | null;
 }
 
-/** Warnings that apply to any rate drawn from the library. */
-export function rateQualityIssues(rate: Rate, c: IssueCollector, today: Date, context: string) {
-  if (rate.approval_status !== 'urban_approved') {
-    c.add({ code: 'RATE_NOT_APPROVED', severity: 'warning', params: { rate: rate.rate_id, status: rate.approval_status, context } });
+export const QUOTE_MAX_AGE_DAYS = 90;
+const daysBetween = (a: Date, iso: string) => (a.getTime() - Date.parse(iso)) / 86_400_000;
+const AREA_UNITS = new Set(['KWD/m2', 'KWD/m²']);
+
+/**
+ * Freshness and provenance warnings for any rate drawn from the library.
+ * Returns true when the rate is unusable (an error was recorded).
+ * No inflation / escalation is ever applied automatically.
+ */
+export function rateQualityIssues(rate: Rate, c: IssueCollector, today: Date, context: string): boolean {
+  const p = { rate: rate.rate_id, context };
+  let fatal = false;
+  if ((context === 'building' || context === 'basement') && !AREA_UNITS.has(rate.unit)) {
+    c.add({ code: 'RATE_UNIT_INCOMPATIBLE', severity: 'error', params: { ...p, unit: rate.unit } });
+    fatal = true;
   }
-  if (isStale(rate, today)) {
-    c.add({ code: 'RATE_STALE', severity: 'warning', params: { rate: rate.rate_id, date: rate.source_date, context } });
+  if (rate.currency !== 'KWD') {
+    c.add({ code: 'RATE_CURRENCY', severity: 'error', params: p });
+    fatal = true;
+  }
+  if (rate.country && rate.country !== 'KW') {
+    c.add({ code: 'RATE_FOREIGN', severity: 'warning', params: { ...p, country: rate.country } });
+  }
+  if (rate.approval_status !== 'urban_approved') {
+    c.add({ code: 'RATE_NOT_APPROVED', severity: 'warning', params: { ...p, status: rate.approval_status } });
+  } else if (!rate.approver) {
+    c.add({ code: 'RATE_APPROVAL_INCOMPLETE', severity: 'warning', params: p });
+  }
+  const validDate = !!rate.source_date && !Number.isNaN(Date.parse(rate.source_date));
+  if (!validDate) {
+    c.add({ code: 'RATE_NO_DATE', severity: 'warning', params: p });
+  } else if (rate.valid_until && rate.valid_until < today.toISOString().slice(0, 10)) {
+    c.add({ code: 'RATE_EXPIRED', severity: 'warning', params: { ...p, date: rate.valid_until } });
+  } else if (rate.approval_status === 'supplier_quotation' && !rate.valid_until && daysBetween(today, rate.source_date) > QUOTE_MAX_AGE_DAYS) {
+    c.add({ code: 'QUOTE_OLD', severity: 'warning', params: { ...p, date: rate.source_date } });
+  } else if (isStale(rate, today)) {
+    c.add({ code: 'RATE_STALE', severity: 'warning', params: { ...p, date: rate.source_date } });
+  }
+  if (['verified_published_claim', 'reconstructed_formula', 'inferred', 'unverified'].includes(rate.evidence_status)) {
+    c.add({ code: 'RATE_UNVERIFIED_METHOD', severity: 'warning', params: { ...p, evidence: rate.evidence_status } });
   }
   if (rate.price_basis === 'material_only') {
-    c.add({ code: 'MATERIAL_ONLY_RATE', severity: 'warning', params: { rate: rate.rate_id, context } });
+    c.add({ code: 'MATERIAL_ONLY_RATE', severity: 'warning', params: p });
   } else if (rate.price_basis === 'labour_only') {
-    c.add({ code: 'LABOUR_ONLY_RATE', severity: 'warning', params: { rate: rate.rate_id, context } });
+    c.add({ code: 'LABOUR_ONLY_RATE', severity: 'warning', params: p });
   }
+  return fatal;
 }
 
 /**
@@ -87,6 +122,10 @@ export function resolveBuildingRate(input: EstimateInput, rb: Ratebook, c: Issue
         rate_id: 'MANUAL',
         label_en: 'User-entered provisional rate',
         label_ar: 'سعر مؤقت مُدخل من المستخدم',
+        evidence_status: 'unverified',
+        confidence: 'unrated',
+        inclusions_ar: '',
+        exclusions_ar: '',
         low: lo.toNumber(),
         mid: mid.toNumber(),
         high: hi.toNumber(),
@@ -137,7 +176,7 @@ export function resolveBuildingRate(input: EstimateInput, rb: Ratebook, c: Issue
     return null;
   }
 
-  rateQualityIssues(rate, c, today, 'building');
+  if (rateQualityIssues(rate, c, today, 'building')) return null;
   const mid = D(rate.price_mid);
   const low = rate.price_low !== null ? D(rate.price_low) : mid;
   const high = rate.price_high !== null ? D(rate.price_high) : mid;
@@ -153,6 +192,10 @@ export function resolveBuildingRate(input: EstimateInput, rb: Ratebook, c: Issue
       rate_id: rate.rate_id,
       label_en: rate.label_en,
       label_ar: rate.label_ar,
+      evidence_status: rate.evidence_status,
+      confidence: confidenceLevel(rate),
+      inclusions_ar: rate.inclusions_ar,
+      exclusions_ar: rate.exclusions_ar,
       low: low.toNumber(),
       mid: mid.toNumber(),
       high: high.toNumber(),

@@ -7,6 +7,17 @@ A standalone, bilingual (Arabic RTL / English LTR), mobile-first web app that pr
 
 This app is fully isolated. It does **not** touch, import or depend on the Urban BOQ / quantity-takeoff engine, DWG/DXF/PDF extraction, S8.7 work, benchmark fixtures or any production database.
 
+## V2 (branch `feature/urban-villa-v2`)
+
+- **Reports:** formulas are shown separately for low, typical and high, and construction cost is kept separate from the owner's additional expenditure.
+- **Estimate levels:** an optional refined estimate (Level 2) sits on top of the quick estimate (Level 1).
+- **Scope ownership:** every component is marked as included, extra, upgrade, provisional, owner-direct, not included, or needs quotation. This prevents double counting.
+- **Ratebook:** schema v2 with evidence status, a qualitative confidence rating, freshness warnings, a named-approver workflow, quotation comparison, and a calibration tab.
+- **PDF:** the report is three A4 pages in English and Arabic.
+- **Public build:** a read-only build is available with `VITE_PUBLIC_BUILD=true`.
+
+Start with `URBAN_V2_IMPLEMENTATION_REPORT.md`. The research files are in `docs/research/`.
+
 ## Run locally
 
 Requirements: Node 18+ (tested on Node 22).
@@ -27,10 +38,10 @@ npm run preview      # http://localhost:4173
 ## Tests
 
 ```bash
-npm test             # 79 deterministic Vitest unit tests (calculation engine, validation, ratebook, JSON round-trip)
+npm test             # 122 deterministic Vitest unit tests
 npm run typecheck    # strict TypeScript
 npm run build && npm run test:e2e
-                     # 22 Playwright tests (desktop + iPhone 13), including Arabic/English PDF generation
+                     # 32 Playwright runs (desktop + iPhone 13), incl. Arabic/English PDF text checks
 ```
 
 If Playwright cannot find a browser, point it at an installed Chromium:

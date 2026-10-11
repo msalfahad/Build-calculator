@@ -1,21 +1,41 @@
 import { useI18n } from '../i18n';
-import { ApprovalBadge, Icon, Kwd, Note, Num, Stepper, StatusBadge } from '../components/ui';
+import { ApprovalBadge, Icon, Kwd, Note, Num, Stepper, StatusBadge, Switch } from '../components/ui';
 import { ResultActions } from '../components/ResultActions';
-import { UnpricedPanel, WarningsPanel } from '../components/IssuePanels';
+import { WarningsPanel } from '../components/IssuePanels';
+import { ExcludedPanel, IncludedPanel } from '../components/ScopeMatrix';
 import { issueText } from '../reports/format';
 import { stepForField } from './Wizard';
 import type { AppState } from '../hooks/useAppState';
+import type { Triple } from '../types';
+
+function TripleCards({ v, noRange, testPrefix }: { v: Triple; noRange: boolean; testPrefix: string }) {
+  const { t } = useI18n();
+  const side = (k: 'low' | 'high') => (
+    <div className={`est ${noRange ? 'na' : ''}`}>
+      <div className="l">{t(`results.${k}`)}</div>
+      {noRange ? <div className="na-text">{t('results.noRange')}</div> : <><div className="v num" data-testid={`${testPrefix}-${k}`}><Num v={v[k]} /></div><div className="u">{t('common.kwd')}</div></>}
+    </div>
+  );
+  return (
+    <div className="est-cards">
+      {side('low')}
+      <div className="est typ"><div className="l">{t('results.typical')}</div><div className="v num" data-testid={`${testPrefix}-mid`}><Num v={v.mid} /></div><div className="u">{t('common.kwd')}</div></div>
+      {side('high')}
+    </div>
+  );
+}
 
 export default function Results({ s }: { s: AppState }) {
   const { t, lang } = useI18n();
   const r = s.result;
-  const steps = ['property', 'floors', 'basement', 'specs', 'extras', 'results'].map((k) => t(`steps.${k}`));
+  const input = s.input;
+  const steps = ['property', 'floors', 'basement', 'specs', 'refined', 'extras', 'results'].map((k) => t(`steps.${k}`));
 
   if (r.status === 'blocked') {
     const errors = r.issues.filter((i) => i.severity === 'error');
     return (
       <div className="wizard-wrap fade-in">
-        <Stepper steps={steps} current={5} onGo={(i) => s.go('wizard', i)} />
+        <Stepper steps={steps} current={6} onGo={(i) => s.go('wizard', i)} />
         <section className="card" data-testid="result-blocked">
           <h2>{t('results.blockedTitle')} <StatusBadge status="blocked" /></h2>
           <Note kind="err">
@@ -35,31 +55,47 @@ export default function Results({ s }: { s: AppState }) {
   }
 
   const partial = r.status === 'partial';
-  const owner = r.ownerTotal!;
-  const cons = r.construction!;
   const rate = r.rate!;
-  const ownerDirect = r.lines.find((l) => l.key === 'owner_direct')?.amount.mid ?? 0;
+  const noRange = !r.rangeAvailable;
+  const grade = s.ratebook.grades.find((g) => g.grade === input.grade);
+  const hasBasement = r.lines.some((l) => l.key === 'basement');
+  const hasExtras = r.lines.some((l) => l.key === 'additions' || l.key === 'allowances');
 
   return (
     <div className="fade-in">
-      <div className="wizard-wrap"><Stepper steps={steps} current={5} onGo={(i) => s.go('wizard', i)} /></div>
-      {s.reopened && s.reopened.ratebookVersion !== s.ratebook.ratebook_version && (
-        <Note kind="warn">{t('saved.savedWith', { saved: s.reopened.ratebookVersion, current: s.ratebook.ratebook_version })} {t('saved.snapshot')}: <Kwd v={s.reopened.result.ownerTotal?.mid} /></Note>
+      <div className="wizard-wrap"><Stepper steps={steps} current={6} onGo={(i) => s.go('wizard', i)} /></div>
+      {s.reopened && (
+        <div className="card" style={{ padding: 12 }}>
+          <Switch checked={s.useSnapshot} onChange={s.setUseSnapshot} label={<span className="small">{t('results.useSavedRates')}</span>} testId="use-snapshot" />
+          {s.useSnapshot ? <p className="xs muted" style={{ margin: '6px 0 0' }}>{t('results.savedRatesActive', { version: s.reopened.ratebookVersion })}</p>
+            : s.reopened.ratebookVersion !== s.ratebook.ratebook_version && <Note kind="warn">{t('saved.savedWith', { saved: s.reopened.ratebookVersion, current: s.ratebook.ratebook_version })} {t('saved.snapshot')}: <Kwd v={s.reopened.result.ownerTotal?.mid} /></Note>}
+        </div>
       )}
       <div className="results-layout">
         <div>
           <section className="card" data-testid="results-card">
             <div className="row" style={{ justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0 }}>{partial ? t('results.constructionPartial') : t('results.title')}</h2>
+              <h2 style={{ margin: 0 }}>{t('results.constructionCostTitle')}</h2>
               <StatusBadge status={r.status} />
             </div>
-            {partial && <Note kind="warn" testId="partial-banner"><b>{t('results.partialTitle')}.</b> {t('results.partialBody')}</Note>}
-            <div className="est-cards">
-              <div className="est"><div className="l">{t('results.low')}</div><div className="v num" data-testid="est-low"><Num v={cons.low} /></div><div className="u">{t('common.kwd')}</div></div>
-              <div className="est typ"><div className="l">{t('results.typical')}</div><div className="v num" data-testid="est-mid"><Num v={cons.mid} /></div><div className="u">{t('common.kwd')}</div></div>
-              <div className="est"><div className="l">{t('results.high')}</div><div className="v num" data-testid="est-high"><Num v={cons.high} /></div><div className="u">{t('common.kwd')}</div></div>
+            {partial && <Note kind="warn" testId="partial-banner"><b>{t('results.partialLabel')}.</b> {t('results.partialBody')}</Note>}
+            <TripleCards v={r.construction!} noRange={noRange} testPrefix="est" />
+
+            <div className="row" style={{ justifyContent: 'space-between', marginTop: 4 }}>
+              <h2 style={{ margin: 0 }}>{partial ? t('results.ownerTotalPartial') : t('results.ownerBudgetTitle')}</h2>
             </div>
-            <div className="kpis">
+            <div className={partial ? 'owner-cards partial' : 'owner-cards'} data-testid="owner-total">
+              <TripleCards v={r.ownerTotal!} noRange={noRange} testPrefix="owner" />
+            </div>
+            <div className="line-list">
+              <div className="line-item"><span className="lb">{partial ? t('results.constructionPartial') : t('results.construction')}</span><span className="am"><Kwd v={r.construction!.mid} /></span></div>
+              <div className="line-item"><span className="lb">{t('results.ownerAdditional')}</span><span className="am"><Kwd v={r.ownerAdditional!.mid} /></span>
+                <span className="bs">{t('lines.owner_direct')} · {t('lines.design')} · {t('lines.fixed_fees')} · {t('lines.contingency')}</span></div>
+              <div className="line-item total-line"><span className="lb">{partial ? t('results.ownerTotalPartial') : t('results.ownerTotal')}</span><span className="am" data-testid="owner-total-mid"><Kwd v={r.ownerTotal!.mid} /></span></div>
+            </div>
+            {noRange && <p className="xs" style={{ color: 'var(--amber-600)' }}>{t('results.noRangeNote')}</p>}
+
+            <div className="kpis" style={{ marginTop: 12 }}>
               <div className="kpi">
                 <div className="l">{t('results.area')}</div>
                 <div className="v"><Num v={r.areas.total} unit={t('common.m2')} /></div>
@@ -69,18 +105,21 @@ export default function Results({ s }: { s: AppState }) {
                 <div className="l">{t('results.typicalRate')}</div>
                 <div className="v"><Num v={r.typicalRatePerM2} unit={t('common.kwdm2')} /></div>
               </div>
-            </div>
-            <div className="line-list" style={{ marginTop: 10 }}>
-              <div className="line-item"><span className="lb">{partial ? t('results.constructionPartial') : t('results.construction')}</span><span className="am"><Kwd v={cons.mid} /></span></div>
-              {ownerDirect > 0 && <div className="line-item"><span className="lb">{t('lines.owner_direct')}</span><span className="am"><Kwd v={ownerDirect} /></span></div>}
-              <div className="line-item"><span className="lb">{t('results.feesCont')}</span><span className="am"><Kwd v={r.feesAndContingency!.mid} /></span></div>
-            </div>
-            <div className={`total-bar ${partial ? 'partial' : ''}`} data-testid="owner-total">
-              <div>
-                <div className="l">{partial ? t('results.ownerTotalPartial') : t('results.ownerTotal')}</div>
-                <div className="xs muted"><Num v={owner.low} /> – <Num v={owner.high} /> {t('common.kwd')}</div>
+              <div className="kpi" data-testid="scope-used">
+                <div className="l">{t('results.scopeUsed')}</div>
+                <div className="small"><b>{t(`scope.${input.scope}`)}</b> · {grade ? (lang === 'ar' ? grade.name_ar : grade.name_en) : input.grade}</div>
+                <div className="xs muted">{input.level === 2 ? t('results.levelRefined') : t('results.levelQuick')}</div>
               </div>
-              <div className="v" data-testid="owner-total-mid"><Kwd v={owner.mid} /></div>
+              <div className="kpi" data-testid="completeness">
+                <div className="l">{t('results.completeness')}</div>
+                <div className="small"><b>{partial ? t('results.partialLabel') : t('results.completeForScope')}</b></div>
+              </div>
+            </div>
+
+            <div className="why" data-testid="why">
+              <b>{t('results.why')}:</b>{' '}
+              <bdi>{t('results.whyText', { area: r.areas.aboveGround.toLocaleString('en-US'), rate: rate.mid, source: rate.rate_id })}</bdi>
+              {hasBasement && ` + ${t('results.whyBasement')}`}{hasExtras && ` + ${t('results.whyAdditions')}`}.
             </div>
             <p className="xs muted" style={{ marginBottom: 0 }}>{t('results.notQuote')}</p>
             <ResultActions s={s} />
@@ -88,18 +127,24 @@ export default function Results({ s }: { s: AppState }) {
         </div>
         <div>
           <section className="card" data-testid="rate-used">
-            <h2>{t('results.rateUsed')}</h2>
+            <h2>{t('results.priceSource')}</h2>
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <b className="small">{lang === 'ar' ? rate.label_ar : rate.label_en}</b>
               <ApprovalBadge status={rate.approval_status} />
             </div>
             <div className="kpi" style={{ marginTop: 8 }}>
               <div className="v"><Num v={rate.mid} unit={t('common.kwdm2')} /></div>
-              {rate.rangeAvailable && <div className="xs muted">{t('specs.range')}: <span className="num">{rate.low}–{rate.high}</span> {t('common.kwdm2')}</div>}
+              {rate.rangeAvailable ? <div className="xs muted">{t('specs.range')}: <span className="num">{rate.low}–{rate.high}</span> {t('common.kwdm2')}</div>
+                : <div className="xs muted">{t('results.noRange')}</div>}
             </div>
-            <p className="xs muted" style={{ margin: '8px 0 0' }}>{rate.source} · {rate.source_date} · {t(`scope.${rate.scope}`)} · {t(`basisType.${rate.price_basis}`)}</p>
+            <div className="row" style={{ marginTop: 8, gap: 6 }}>
+              <span className="badge b-neutral" data-testid="evidence-badge">{t(`evidence.${rate.evidence_status}`)}</span>
+              <span className={`badge conf-${rate.confidence}`}>{t(`confidence.${rate.confidence}`)}</span>
+            </div>
+            <p className="xs muted" style={{ margin: '8px 0 0' }}><bdi>{rate.source}</bdi> · <span className="num">{rate.source_date}</span> · {t(`scope.${rate.scope}`)} · {t(`basisType.${rate.price_basis}`)}</p>
           </section>
-          <UnpricedPanel r={r} />
+          <IncludedPanel r={r} />
+          <ExcludedPanel r={r} />
           <WarningsPanel r={r} />
         </div>
       </div>

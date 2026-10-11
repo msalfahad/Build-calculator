@@ -10,11 +10,13 @@ import Report from './pages/Report';
 import Saved from './pages/Saved';
 import Admin from './pages/Admin';
 import Research from './pages/Research';
+import { ADMIN_ENABLED } from './lib/ratebookStore';
 
 const NAV: { key: string; view: View }[] = [
   { key: 'calculator', view: 'home' },
   { key: 'saved', view: 'saved' },
-  { key: 'ratebook', view: 'admin' },
+  // The rate library is hidden in a public (read-only) build.
+  ...(ADMIN_ENABLED ? [{ key: 'ratebook', view: 'admin' as View }] : []),
   { key: 'research', view: 'research' },
 ];
 

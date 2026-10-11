@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n';
-import { Chips, Choices, Icon, Kwd, NumberField, Note, Num, SelectField, Stepper, Switch, TextField, ApprovalBadge } from '../components/ui';
+import { Chips, Choices, Icon, NumberField, Note, Num, SelectField, Stepper, Switch, TextField, ApprovalBadge } from '../components/ui';
 import { buildingRatesForScope, basementRates, candidateRates, suggestFloorArea } from '../calculators';
-import { ADDITION_CATALOG, newAddition, newId } from '../lib/defaults';
+import { COMPONENT_CATALOG, newAddition, newId } from '../lib/defaults';
+import { ScopeItemEditor } from '../components/ScopeItemEditor';
 import { issueText } from '../reports/format';
-import { BASEMENT_COMPONENTS, FLOOR_KEYS, GRADES, SCOPES, type EstimateInput, type Issue } from '../types';
+import { BASEMENT_COMPONENTS, FLOOR_KEYS, GRADES, SCOPES, SCOPE_STATUSES, SITE_DIFFICULTIES, type ComponentGroup, type EstimateInput, type Issue, type ScopeStatus, type Tristate } from '../types';
 import type { AppState } from '../hooks/useAppState';
 
-const STEP_KEYS = ['property', 'floors', 'basement', 'specs', 'extras'] as const;
+const STEP_KEYS = ['property', 'floors', 'basement', 'specs', 'refined', 'extras'] as const;
+const LAST = STEP_KEYS.length - 1;
 const STEP_FIELDS: ((f: string) => boolean)[] = [
   (f) => f === 'plotArea',
   (f) => f.startsWith('floors.'),
   (f) => f.startsWith('basement.'),
   (f) => f.startsWith('rateSelection.') || f === 'floorHeight',
+  (f) => f.startsWith('refined.'),
   (f) => f.startsWith('additions.') || f.startsWith('ownerDirect.') || f.startsWith('fees.'),
 ];
 // Errors that should not stop navigation: the result page explains them (e.g. an unpriced scope).
@@ -44,8 +47,10 @@ export default function Wizard({ s }: { s: AppState }) {
       return d;
     });
 
+  // In the refined estimate, scope items are edited on the refined step.
+  const inStep = (i: number, f: string) => STEP_FIELDS[i](f) || (input.level === 2 && i === 4 && f.startsWith('additions.'));
   const stepErrors = (i: number): Issue[] =>
-    result.issues.filter((x) => x.severity === 'error' && x.field && STEP_FIELDS[i](x.field) && !NON_BLOCKING.has(x.code));
+    result.issues.filter((x) => x.severity === 'error' && x.field && inStep(i, x.field) && !NON_BLOCKING.has(x.code));
   const errFor = (field: string) => {
     if (!showErrors) {
       // Format errors (bad numbers) show immediately; "required" errors only after pressing Next.
@@ -62,7 +67,7 @@ export default function Wizard({ s }: { s: AppState }) {
       return;
     }
     setShowErrors(false);
-    if (step < 4) s.go('wizard', step + 1);
+    if (step < LAST) s.go('wizard', step + 1);
     else s.go('results');
   };
   const back = () => (step === 0 ? s.go('home') : s.go('wizard', step - 1));
@@ -75,12 +80,13 @@ export default function Wizard({ s }: { s: AppState }) {
       {step === 1 && <StepFloors {...ctx} />}
       {step === 2 && <StepBasement {...ctx} />}
       {step === 3 && <StepSpecs {...ctx} />}
-      {step === 4 && <StepExtras {...ctx} />}
+      {step === 4 && <StepRefined {...ctx} />}
+      {step === 5 && <StepExtras {...ctx} />}
       {showErrors && stepErrors(step).length > 0 && <Note kind="err" testId="step-errors">{t('common.fixErrors')}</Note>}
       <div className="wizard-nav sticky-nav">
         <button className="btn btn-ghost" onClick={back} data-testid="wizard-back">{Icon.back()} {t('common.back')}</button>
         <button className="btn btn-primary" onClick={next} data-testid="wizard-next">
-          {step === 4 ? t('common.calculate') : t('common.next')} {Icon.arrow()}
+          {step === LAST ? t('common.calculate') : t('common.next')} {Icon.arrow()}
         </button>
       </div>
     </div>
@@ -412,61 +418,122 @@ function RateCard({ rateId, s }: { rateId: string; s: AppState }) {
 }
 
 /* ------------------------------------------------------------------ */
-function StepExtras({ input, update, errFor, s }: StepProps) {
+function StepRefined({ input, update, errFor, s }: StepProps) {
   const { t, lang } = useI18n();
-  const res = s.result;
-  const available = ADDITION_CATALOG.filter((c) => (!c.basementOnly || input.basement.enabled) && !input.additions.some((a) => a.key === c.key));
+  const r = input.refined;
+  const on = input.level === 2;
+  const groups: ComponentGroup[] = ['structure', 'architectural', 'mep', 'external'];
+  const tri = (v: Tristate, set: (x: Tristate) => void, label: string) => (
+    <div className="field"><span className="field-label">{label}</span>
+      <Chips label={label} value={v} onChange={set} options={(['unknown', 'yes', 'no'] as const).map((x) => ({ value: x, label: t(`common.${x}`) }))} />
+    </div>
+  );
   return (
     <>
       <section className="card">
-        <h2>{t('extras.additions')}</h2>
-        <p className="muted small" style={{ marginTop: -6 }}>{t('extras.additionsHint')}</p>
-        <div className="picker">
-          {available.map((c) => (
-            <button key={c.key} type="button" onClick={() => update((d) => { d.additions.push(newAddition(c.key, d.scope, lang)); })} data-testid={`add-${c.key}`}>
-              + {lang === 'ar' ? c.ar : c.en}
-            </button>
-          ))}
-          <button type="button" onClick={() => update((d) => { d.additions.push(newAddition('custom', d.scope, lang)); })}>+ {t('extras.custom')}</button>
-        </div>
-        {input.additions.map((a, idx) => {
-          const cat = ADDITION_CATALOG.find((c) => c.key === a.key);
-          const r = res.additions.find((x) => x.id === a.id);
-          const set = (fn: (x: typeof a) => void) => update((d) => fn(d.additions[idx]));
-          return (
-            <div className="add-item" key={a.id} data-testid={`addition-${a.key}`}>
-              <div className="head">
-                <Switch checked={a.enabled} onChange={(v) => set((x) => { x.enabled = v; })} label={<b>{a.description || t('extras.custom')}</b>} />
-                <button className="icon-btn" aria-label={t('common.delete')} onClick={() => update((d) => { d.additions.splice(idx, 1); })}>{Icon.trash()}</button>
-              </div>
-              {a.enabled && (
-                <>
-                  {a.key === 'custom' && <TextField label={t('extras.description')} value={a.description} onChange={(v) => set((x) => { x.description = v; })} />}
-                  <div className="add-grid">
-                    <NumberField label={t('extras.qty')} value={a.quantity} onChange={(v) => set((x) => { x.quantity = v; })} error={errFor(`additions.${a.id}.quantity`)} compact />
-                    <TextField label={t('extras.unit')} value={a.unit} onChange={(v) => set((x) => { x.unit = v; })} />
-                    <NumberField label={t('extras.rate')} value={a.rate} onChange={(v) => set((x) => { x.rate = v; })} error={errFor(`additions.${a.id}.rate`)} testId={`rate-${a.key}`} compact />
-                    <TextField label={t('extras.source')} value={a.source} onChange={(v) => set((x) => { x.source = v; })} />
-                  </div>
-                  <div style={{ marginTop: 8 }}>
-                    <label className="check">
-                      <input type="checkbox" checked={a.includedInBaseline} onChange={(e) => set((x) => { x.includedInBaseline = e.target.checked; })} />
-                      {t('extras.included')}
-                    </label>
-                    {a.includedInBaseline && (
-                      <NumberField label={t('extras.allowance')} value={a.standardAllowance} unit={t('common.kwd')} onChange={(v) => set((x) => { x.standardAllowance = v; })} error={errFor(`additions.${a.id}.standardAllowance`)} />
-                    )}
-                  </div>
-                  {cat?.hint && <p className="xs muted" style={{ margin: '4px 0 0' }}>ⓘ {t('extras.hint')}: {cat.hint}</p>}
-                  <div className="add-net">
-                    <span>{t('extras.net')}</span>
-                    <b>{r?.priced ? <><Kwd v={r.net} />{r.net !== null && r.net < 0 ? ` (${t('common.credit')})` : ''}</> : <span style={{ color: 'var(--amber-600)' }}>{t('common.unpriced')}</span>}</b>
-                  </div>
-                </>
-              )}
+        <h2>{t('refined.title')}</h2>
+        <p className="small muted" style={{ marginTop: -6 }}>{t('refined.intro')}</p>
+        <Switch checked={on} onChange={(v) => update((d) => { d.level = v ? 2 : 1; d.refined.enabled = v; })} label={<b>{t('refined.toggle')}</b>} testId="refined-toggle" />
+        {!on && <Note>{t('refined.quickNote')}</Note>}
+      </section>
+      {on && (
+        <>
+          <section className="card fade-in">
+            <h2>{t('refined.structure')}</h2>
+            <Note>{t('refined.noQuantities')}</Note>
+            <span className="field-label">{t('refined.floorHeights')}</span>
+            <div className="grid2">
+              {FLOOR_KEYS.filter((k) => input.floors[k].enabled).map((k) => (
+                <NumberField key={k} label={t(`floors.${k}`)} value={r.floorHeights[k]} unit="m" onChange={(v) => update((d) => { d.refined.floorHeights[k] = v; })} error={errFor(`refined.floorHeights.${k}`)} />
+              ))}
             </div>
-          );
-        })}
+            <p className="hint xs muted" style={{ marginTop: -4 }}>{t('refined.floorHeightsNote')}</p>
+            {tri(r.cantilevers, (v) => update((d) => { d.refined.cantilevers = v; }), t('refined.cantilevers'))}
+            {tri(r.specialStructure, (v) => update((d) => { d.refined.specialStructure = v; }), t('refined.specialStructure'))}
+            {tri(r.structuralDrawings, (v) => update((d) => { d.refined.structuralDrawings = v; }), t('refined.structuralDrawings'))}
+            <div className="field">
+              <span className="field-label">{t('refined.siteDifficulties')}</span>
+              <div className="grid2" style={{ gap: 2 }}>
+                {SITE_DIFFICULTIES.map((sd) => (
+                  <label className="check" key={sd}>
+                    <input type="checkbox" checked={r.siteDifficulties.includes(sd)} data-testid={`sd-${sd}`} onChange={(e) => update((d) => {
+                      d.refined.siteDifficulties = e.target.checked ? [...d.refined.siteDifficulties, sd] : d.refined.siteDifficulties.filter((x) => x !== sd);
+                    })} />
+                    {t(`refined.sd_${sd}`)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </section>
+          <section className="card fade-in">
+            <h2>{t('refined.components')}</h2>
+            <p className="small muted" style={{ marginTop: -6 }}>{t('refined.componentsHint')}</p>
+            {groups.map((g) => (
+              <details key={g} className="group-block" open={g !== 'structure'}>
+                <summary>{t(`groups.${g}`)}</summary>
+                {COMPONENT_CATALOG.filter((c) => c.group === g && (!c.basementOnly || input.basement.enabled)).map((c) => {
+                  const idx = input.additions.findIndex((a) => a.key === c.key);
+                  const item = idx >= 0 ? input.additions[idx] : null;
+                  return (
+                    <div key={c.key} className="comp-row">
+                      <div className="comp-head">
+                        <span className="comp-name">{lang === 'ar' ? c.ar : c.en}</span>
+                        <select className="input comp-select" aria-label={`${t('refined.pickStatus')}: ${lang === 'ar' ? c.ar : c.en}`} data-testid={`comp-${c.key}`}
+                          value={item ? item.status : 'none'}
+                          onChange={(e) => update((d) => {
+                            const v = e.target.value as ScopeStatus | 'none';
+                            const i2 = d.additions.findIndex((a) => a.key === c.key);
+                            if (v === 'none') { if (i2 >= 0) d.additions.splice(i2, 1); return; }
+                            if (i2 >= 0) { d.additions[i2].status = v; d.additions[i2].enabled = true; } else d.additions.push(newAddition(c.key, d.scope, lang, v));
+                          })}>
+                          <option value="none">{t('scopeStatus.none')}</option>
+                          {SCOPE_STATUSES.map((st) => <option key={st} value={st}>{t(`scopeStatus.${st}`)}</option>)}
+                        </select>
+                      </div>
+                      {item && item.status !== 'baseline' && item.status !== 'excluded' && item.status !== 'quote_required' && (
+                        <ScopeItemEditor item={item} result={s.result.additions.find((x) => x.id === item.id)} errFor={errFor} compactHeader
+                          onChange={(fn) => update((d) => fn(d.additions[idx]))} />
+                      )}
+                    </div>
+                  );
+                })}
+              </details>
+            ))}
+          </section>
+        </>
+      )}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+function StepExtras({ input, update, errFor, s }: StepProps) {
+  const { t, lang } = useI18n();
+  const res = s.result;
+  const available = COMPONENT_CATALOG.filter((c) => c.level === 1 && (!c.basementOnly || input.basement.enabled) && !input.additions.some((a) => a.key === c.key));
+  return (
+    <>
+      <section className="card">
+        <h2>{t('extras.quickExtras')}</h2>
+        {input.level === 2 ? (
+          <Note>{t('refined.componentsHint')} → {t('steps.refined')}</Note>
+        ) : (
+          <>
+            <p className="muted small" style={{ marginTop: -6 }}>{t('extras.additionsHint')}</p>
+            <div className="picker">
+              {available.map((c) => (
+                <button key={c.key} type="button" onClick={() => update((d) => { d.additions.push(newAddition(c.key, d.scope, lang)); })} data-testid={`add-${c.key}`}>
+                  + {lang === 'ar' ? c.ar : c.en}
+                </button>
+              ))}
+              <button type="button" onClick={() => update((d) => { d.additions.push(newAddition('custom', d.scope, lang)); })}>+ {t('extras.custom')}</button>
+            </div>
+            {input.additions.map((a, idx) => (
+              <ScopeItemEditor key={a.id} item={a} result={res.additions.find((x) => x.id === a.id)} errFor={errFor}
+                onChange={(fn) => update((d) => fn(d.additions[idx]))} onDelete={() => update((d) => { d.additions.splice(idx, 1); })} />
+            ))}
+          </>
+        )}
       </section>
 
       <section className="card">

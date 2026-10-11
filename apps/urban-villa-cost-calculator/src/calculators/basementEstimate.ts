@@ -1,6 +1,6 @@
 import { D } from '../lib/decimal';
 import { IssueCollector } from '../validation/parse';
-import { BASEMENT_COMPONENTS, type EstimateInput, type Rate, type Ratebook, type UnpricedItem } from '../types';
+import { BASEMENT_COMPONENTS, type BasisParams, type EstimateInput, type Rate, type Ratebook, type Scenario, type UnpricedItem } from '../types';
 import { triRound, triScalar, type Tri } from './quickEstimate';
 import { rateQualityIssues } from './rateSelection';
 import type { ParsedAreas } from './buildingArea';
@@ -9,8 +9,11 @@ export interface BasementOutcome {
   cost: Tri | null; // null = enabled but not priced
   rateUsed: Rate | null;
   basis: string;
-  basisParams: Record<string, string | number>;
+  basisBy: Record<Scenario, BasisParams>;
+  kind: 'area_rate' | 'allowance';
 }
+
+const same = (p: BasisParams): Record<Scenario, BasisParams> => ({ low: p, mid: p, high: p });
 
 /**
  * Formula C — basement, priced separately from above-ground floors.
@@ -32,7 +35,7 @@ export function estimateBasement(
   if (!b.enabled) return null;
 
   c.num(b.depth, 'basement.depth');
-  let outcome: BasementOutcome = { cost: null, rateUsed: null, basis: 'unpriced', basisParams: {} };
+  let outcome: BasementOutcome = { cost: null, rateUsed: null, basis: 'unpriced', basisBy: same({}), kind: 'area_rate' };
   const area = areas.basement;
 
   if (b.pricingMode === 'library') {
@@ -40,16 +43,14 @@ export function estimateBasement(
     if (!rate || !rate.active || rate.category !== 'basement' || rate.price_mid === null) {
       c.add({ code: 'BASEMENT_RATE_INVALID', severity: 'error', field: 'basement.rateId', params: { rate: b.rateId || '—' } });
     } else {
-      rateQualityIssues(rate, c, today, 'basement');
-      const mid = D(rate.price_mid);
-      const low = rate.price_low !== null ? D(rate.price_low) : mid;
-      const high = rate.price_high !== null ? D(rate.price_high) : mid;
-      outcome = {
-        cost: triRound({ low: area.times(low), mid: area.times(mid), high: area.times(high) }),
-        rateUsed: rate,
-        basis: 'area_x_rate',
-        basisParams: { area: area.toNumber(), rate: mid.toNumber(), source: rate.rate_id },
-      };
+      if (!rateQualityIssues(rate, c, today, 'basement')) {
+        const mid = D(rate.price_mid);
+        const low = rate.price_low !== null ? D(rate.price_low) : mid;
+        const high = rate.price_high !== null ? D(rate.price_high) : mid;
+        const cost = triRound({ low: area.times(low), mid: area.times(mid), high: area.times(high) });
+        const bp = (r: typeof mid, k: Scenario): BasisParams => ({ area: area.toNumber(), rate: r.toNumber(), result: cost[k].toNumber(), source: rate.rate_id });
+        outcome = { cost, rateUsed: rate, basis: 'area_x_rate', basisBy: { low: bp(low, 'low'), mid: bp(mid, 'mid'), high: bp(high, 'high') }, kind: 'area_rate' };
+      }
     }
   } else if (b.pricingMode === 'rate') {
     const r = c.num(b.rate, 'basement.rate');
@@ -57,11 +58,13 @@ export function estimateBasement(
       if (!c.issues.some((i) => i.field === 'basement.rate')) c.add({ code: 'BASEMENT_RATE_REQUIRED', severity: 'error', field: 'basement.rate' });
     } else {
       c.add({ code: 'BASEMENT_PROVISIONAL', severity: 'warning' });
+      const cost = triRound(triScalar(area.times(r)));
       outcome = {
-        cost: triRound(triScalar(area.times(r))),
+        cost,
         rateUsed: null,
         basis: 'area_x_rate',
-        basisParams: { area: area.toNumber(), rate: r.toNumber(), source: b.priceSource.trim() || 'provisional' },
+        basisBy: same({ area: area.toNumber(), rate: r.toNumber(), result: cost.mid.toNumber(), source: b.priceSource.trim() || 'provisional' }),
+        kind: 'area_rate',
       };
     }
   } else if (b.pricingMode === 'allowance') {
@@ -70,11 +73,13 @@ export function estimateBasement(
       if (!c.issues.some((i) => i.field === 'basement.allowance')) c.add({ code: 'BASEMENT_ALLOWANCE_REQUIRED', severity: 'error', field: 'basement.allowance' });
     } else {
       c.add({ code: 'BASEMENT_PROVISIONAL', severity: 'warning' });
+      const cost = triRound(triScalar(a));
       outcome = {
-        cost: triRound(triScalar(a)),
+        cost,
         rateUsed: null,
         basis: 'allowance',
-        basisParams: { amount: a.toNumber(), source: b.priceSource.trim() || 'provisional' },
+        basisBy: same({ amount: cost.mid.toNumber(), result: cost.mid.toNumber(), source: b.priceSource.trim() || 'provisional' }),
+        kind: 'allowance',
       };
     }
   }

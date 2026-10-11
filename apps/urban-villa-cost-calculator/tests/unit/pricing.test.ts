@@ -204,8 +204,8 @@ describe('Optional additions, owner-direct and final budget', () => {
   it('upgrade charges subtract the included standard allowance (no double counting)', () => {
     const i = threeFloors();
     const k = newAddition('kitchen', 'turnkey');
-    expect(k.includedInBaseline).toBe(true);
-    i.additions = [{ ...k, rate: '15000', standardAllowance: '6000', source: 'Showroom quote' }];
+    expect(k.status).toBe('extra'); // V2: no assumed inclusion without documented scope data
+    i.additions = [{ ...k, status: 'upgrade', rate: '15000', standardAllowance: '6000', source: 'Showroom quote' }];
     const r = calculateEstimate(i, rb(), NOW);
     expect(r.additions[0]).toMatchObject({ gross: 15000, allowance: 6000, net: 9000 });
     expect(r.construction!.mid).toBe(144000 + 9000);
@@ -213,7 +213,7 @@ describe('Optional additions, owner-direct and final budget', () => {
 
   it('included item without a known allowance is unpriced (not full cost, not zero)', () => {
     const i = threeFloors();
-    i.additions = [{ ...newAddition('kitchen', 'turnkey'), rate: '15000' }];
+    i.additions = [{ ...newAddition('kitchen', 'turnkey'), status: 'upgrade', rate: '15000' }];
     const r = calculateEstimate(i, rb(), NOW);
     expect(r.status).toBe('partial');
     expect(r.unpriced[0].code).toBe('ADDITION_ALLOWANCE_MISSING');
@@ -231,7 +231,7 @@ describe('Optional additions, owner-direct and final budget', () => {
 
   it('downgrade below allowance yields a credit', () => {
     const i = threeFloors();
-    i.additions = [{ ...newAddition('kitchen', 'turnkey'), rate: '4000', standardAllowance: '6000', source: 'q' }];
+    i.additions = [{ ...newAddition('kitchen', 'turnkey'), status: 'upgrade', rate: '4000', standardAllowance: '6000', source: 'q' }];
     const r = calculateEstimate(i, rb(), NOW);
     expect(r.additions[0].net).toBe(-2000);
     expect(r.construction!.mid).toBe(142000);

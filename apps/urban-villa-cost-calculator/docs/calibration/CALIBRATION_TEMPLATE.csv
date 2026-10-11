@@ -1,0 +1,2 @@
+id,name,location,date,builtUpArea,floors,basement,specification,contractorScope,initialEstimate,awardedValue,finalCost,unrelatedVariations,scopeAdjustment,priceSources,notes
+P-001,(anonymised project ID),(area / governorate),(YYYY-MM-DD completion),(m² built-up),(e.g. 3 + roof annex),(true/false),(grade / key specs),(turnkey | structure | finishing),(KWD estimate at the time),(KWD awarded contract),(KWD final account),(KWD owner change orders outside estimated scope),(± KWD to align actual scope with estimated scope),(quotations / final account refs),(free text)

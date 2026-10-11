@@ -1,7 +1,7 @@
 {
   "schema": "urban-ratebook",
-  "schema_version": 1,
-  "ratebook_version": 1,
+  "schema_version": 2,
+  "ratebook_version": 2,
   "updated_at": "2026-10-11T00:00:00.000Z",
   "rates": [
     {
@@ -26,9 +26,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
       "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
-      "notes": "Research/demo data. Not an Urban-approved rate. Building area not plot.",
+      "notes": "Research/demo data. Not an Urban-approved rate. Building area not plot. Underlying evidence for the tier values is not disclosed by the publisher (see docs/research).",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 6,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "بناء متكامل (تسليم مفتاح) لكل متر مربع من مساحة البناء (وليس مساحة الأرض)، كما ورد في جدول الفئات التوضيحي للناشر.",
+      "exclusions_ar": "السرداب، الأرض، الإضافات الخاصة، المواصفات الخاصة بالمالك. النطاق غير مدقق.",
+      "notes_ar": "بيانات بحثية/تجريبية. ليس سعراً معتمداً من أوربن.",
+      "included_components": []
     },
     {
       "rate_id": "VR-02",
@@ -52,9 +72,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
       "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
-      "notes": "Research/demo data. Not an Urban-approved rate.",
+      "notes": "Research/demo data. Not an Urban-approved rate. Underlying evidence for the tier values is not disclosed by the publisher (see docs/research).",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 6,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "بناء متكامل (تسليم مفتاح) لكل متر مربع من مساحة البناء (وليس مساحة الأرض)، كما ورد في جدول الفئات التوضيحي للناشر.",
+      "exclusions_ar": "السرداب، الأرض، الإضافات الخاصة، المواصفات الخاصة بالمالك. النطاق غير مدقق.",
+      "notes_ar": "بيانات بحثية/تجريبية. ليس سعراً معتمداً من أوربن.",
+      "included_components": []
     },
     {
       "rate_id": "VR-03",
@@ -78,9 +118,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
       "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
-      "notes": "Research/demo data. No owner-specific specification.",
+      "notes": "Research/demo data. No owner-specific specification. Underlying evidence for the tier values is not disclosed by the publisher (see docs/research).",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 6,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "بناء متكامل (تسليم مفتاح) لكل متر مربع من مساحة البناء (وليس مساحة الأرض)، كما ورد في جدول الفئات التوضيحي للناشر.",
+      "exclusions_ar": "السرداب، الأرض، الإضافات الخاصة، المواصفات الخاصة بالمالك. النطاق غير مدقق.",
+      "notes_ar": "بيانات بحثية/تجريبية. ليس سعراً معتمداً من أوربن.",
+      "included_components": []
     },
     {
       "rate_id": "VR-04",
@@ -104,9 +164,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
       "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
-      "notes": "Research/demo data. No custom villa facade premium verified.",
+      "notes": "Research/demo data. No custom villa facade premium verified. Underlying evidence for the tier values is not disclosed by the publisher (see docs/research).",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 6,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "بناء متكامل (تسليم مفتاح) لكل متر مربع من مساحة البناء (وليس مساحة الأرض)، كما ورد في جدول الفئات التوضيحي للناشر.",
+      "exclusions_ar": "السرداب، الأرض، الإضافات الخاصة، المواصفات الخاصة بالمالك. النطاق غير مدقق.",
+      "notes_ar": "بيانات بحثية/تجريبية. ليس سعراً معتمداً من أوربن.",
+      "included_components": []
     },
     {
       "rate_id": "VR-05",
@@ -130,9 +210,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
       "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
-      "notes": "Research/demo data. Do not extrapolate trade prices.",
+      "notes": "Research/demo data. Do not extrapolate trade prices. Underlying evidence for the tier values is not disclosed by the publisher (see docs/research).",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 6,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "بناء متكامل (تسليم مفتاح) لكل متر مربع من مساحة البناء (وليس مساحة الأرض)، كما ورد في جدول الفئات التوضيحي للناشر.",
+      "exclusions_ar": "السرداب، الأرض، الإضافات الخاصة، المواصفات الخاصة بالمالك. النطاق غير مدقق.",
+      "notes_ar": "بيانات بحثية/تجريبية. ليس سعراً معتمداً من أوربن.",
+      "included_components": []
     },
     {
       "rate_id": "MF-01",
@@ -156,9 +256,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
       "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
-      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range. Advertised by the contractor; underlying quotations not disclosed.",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 5,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "الهيكل والتشطيبات والتكييف والكهرباء كما يعلن المقاول.",
+      "exclusions_ar": "السرداب، الأرض، إضافات المالك. عرض مُعلن وليس عقداً مُرسى.",
+      "notes_ar": "نظام تصنيف مفتاح — غير مطابق لفئات أوربن. قيمة مرجعية واحدة بلا نطاق منشور.",
+      "included_components": []
     },
     {
       "rate_id": "MF-02",
@@ -182,9 +302,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
       "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
-      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range. Advertised by the contractor; underlying quotations not disclosed.",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 5,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "الهيكل والتشطيبات والتكييف والكهرباء كما يعلن المقاول.",
+      "exclusions_ar": "السرداب، الأرض، إضافات المالك. عرض مُعلن وليس عقداً مُرسى.",
+      "notes_ar": "نظام تصنيف مفتاح — غير مطابق لفئات أوربن. قيمة مرجعية واحدة بلا نطاق منشور.",
+      "included_components": []
     },
     {
       "rate_id": "MF-03",
@@ -208,9 +348,29 @@
       "approval_status": "published_benchmark",
       "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
       "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
-      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range. Advertised by the contractor; underlying quotations not disclosed.",
       "version": 1,
-      "active": true
+      "active": true,
+      "trade_category": "Whole building (turnkey)",
+      "work_description": "Turnkey villa construction per m² of built-up area",
+      "location": "Kuwait",
+      "country": "KW",
+      "evidence_status": "verified_published_claim",
+      "evidence_category": 5,
+      "confidence": {
+        "relevance": "medium",
+        "scope_match": "low",
+        "recency": "high",
+        "completeness": "low",
+        "incurred": "low"
+      },
+      "approver": "",
+      "approved_at": "",
+      "last_reviewed": "2026-10-11",
+      "inclusions_ar": "الهيكل والتشطيبات والتكييف والكهرباء كما يعلن المقاول.",
+      "exclusions_ar": "السرداب، الأرض، إضافات المالك. عرض مُعلن وليس عقداً مُرسى.",
+      "notes_ar": "نظام تصنيف مفتاح — غير مطابق لفئات أوربن. قيمة مرجعية واحدة بلا نطاق منشور.",
+      "included_components": []
     }
   ],
   "grades": [
@@ -460,5 +620,15 @@
       ]
     }
   ],
-  "changelog": []
+  "changelog": [
+    {
+      "at": "2026-10-11T00:00:00.000Z",
+      "rate_id": "*",
+      "action": "migrate",
+      "field": "schema_version",
+      "from": "1",
+      "to": "2",
+      "ratebook_version": 2
+    }
+  ]
 }

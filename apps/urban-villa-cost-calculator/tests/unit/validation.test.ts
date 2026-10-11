@@ -77,7 +77,7 @@ describe('Input validation and safeguards', () => {
 
   it('results carry engine and ratebook versions', () => {
     const r = calculateEstimate(threeFloors(), rb(), NOW);
-    expect(r.meta.engineVersion).toBe('1.0.0');
-    expect(r.meta.ratebookVersion).toBe(1);
+    expect(r.meta.engineVersion).toBe('2.0.0');
+    expect(r.meta.ratebookVersion).toBe(2);
   });
 });

@@ -346,3 +346,57 @@ bdi { unicode-bidi: isolate; }
 .modal { max-height: 92dvh; }
 @media (min-width: 720px) { .modal-bg { align-items: center; } }
 @media print { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* V2: refined step */
+.group-block { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; background: #fff; }
+.group-block > summary { cursor: pointer; padding: 12px 14px; font-weight: 700; color: var(--navy-800); list-style: none; display: flex; justify-content: space-between; min-height: 44px; align-items: center; }
+.group-block > summary::after { content: '▾'; color: var(--ink-3); }
+.group-block[open] > summary::after { content: '▴'; }
+.comp-row { border-top: 1px solid var(--line-2); padding: 10px 14px; }
+.comp-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.comp-name { font-weight: 600; font-size: 14px; flex: 1 1 160px; }
+.comp-select { flex: 0 1 220px; min-height: 40px; font-size: 14px; padding: 6px 10px; }
+.comp-row .add-item { margin: 8px 0 0; }
+table.t tr.sect td { background: var(--navy-800); color: #fff; font-weight: 700; font-size: 12.5px; letter-spacing: .02em; }
+.basis.scen { display: grid; gap: 1px; margin-top: 3px; }
+.basis .scen-k { font-weight: 600; color: var(--ink-2); }
+.badge.kind-area_rate { background: var(--blue-50); color: var(--blue-600); }
+.badge.kind-calculated { background: var(--green-50); color: var(--green-600); }
+.badge.kind-allowance { background: var(--amber-50); color: var(--amber-600); }
+.badge.kind-percentage, .badge.kind-fixed, .badge.kind-owner { background: var(--line-2); color: var(--ink-2); }
+.est.na { background: #fafbfd; }
+.est .na-text { font-size: 12px; color: var(--ink-3); margin-top: 10px; line-height: 1.3; }
+.owner-cards .est.typ { border-color: var(--green-600); background: var(--green-50); }
+.owner-cards .est.typ .v { color: var(--green-600); }
+.owner-cards.partial .est.typ { border-color: var(--amber-600); background: var(--amber-50); }
+.owner-cards.partial .est.typ .v { color: var(--amber-600); }
+.line-item.total-line .lb, .line-item.total-line .am { font-size: 16px; color: var(--navy-800); }
+.why { background: var(--blue-50); color: #1c3d7a; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; margin-top: 12px; }
+.badge.conf-low, .badge.conf-unrated { background: var(--amber-50); color: var(--amber-600); }
+.badge.conf-medium { background: var(--blue-50); color: var(--blue-600); }
+.badge.conf-high { background: var(--green-50); color: var(--green-600); }
+/* V2 report pages */
+.report .rpage { position: relative; }
+.report .rpage + .rpage { margin-top: 36px; border-top: 2px dashed var(--line); padding-top: 28px; }
+.report .ptitle { font-size: 16px; border: 0; color: var(--navy-800); margin: 4px 0 10px; }
+.report h3 { font-size: 13px; color: var(--navy-800); margin: 14px 0 6px; }
+.report .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.report .rbox { border: 1px solid #d5dbe5; border-radius: 8px; padding: 10px; margin: 10px 0; }
+.report .rbox.owner { border-color: #bfe5cf; background: #f6fcf8; }
+.report .rbox-title { font-weight: 700; color: var(--navy-800); margin-bottom: 6px; font-size: 13px; }
+.report .budgets b.na { font-size: 11px; color: #777; font-weight: 600; }
+.report table.calc td { font-size: 11.5px; }
+.report table.calc tr.grp td { border-bottom-color: transparent; }
+.report .formula { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.report .foot { margin-top: 16px; }
+@media (max-width: 640px) { .report .two-col { grid-template-columns: 1fr; } .report .formula { white-space: normal; } }
+@media print {
+  .report .rpage.break { break-before: page; page-break-before: always; }
+  .report .rpage + .rpage { margin-top: 0; border-top: 0; padding-top: 0; }
+}
+.report table.t td { padding: 5px 8px; }
+.report table.t th { padding: 5px 8px; }
+@media print { .report { font-size: 11.5px; } .report .rh { padding-bottom: 8px; margin-bottom: 10px; } }
+table.t tr.grp td { border-bottom-color: transparent; }
+/* On phones the on-screen report scrolls wide tables horizontally inside the page (print layout unaffected). */
+@media screen and (max-width: 640px) { .report table.t { display: block; overflow-x: auto; max-width: 100%; } .report table.calc td:first-child { min-width: 120px; } }

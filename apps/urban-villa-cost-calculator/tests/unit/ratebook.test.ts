@@ -26,13 +26,13 @@ describe('Ratebook administration', () => {
   });
 
   it('adding a rate logs it and bumps the ratebook version', () => {
-    const next = upsertRate(rb(), { ...blankRate(), rate_id: 'U-1', price_mid: 160, source: 'Urban QS', approval_status: 'urban_approved' }, NOW);
-    expect(next.ratebook_version).toBe(2);
+    const next = upsertRate(rb(), { ...blankRate(), rate_id: 'U-1', price_mid: 160, source: 'Urban QS', approval_status: 'urban_approved', approver: 'QS lead' }, NOW);
+    expect(next.ratebook_version).toBe(3);
     expect(next.changelog[0]).toMatchObject({ rate_id: 'U-1', action: 'create' });
   });
 
   it('editing the price of an approved rate downgrades it to provisional', () => {
-    let book = upsertRate(rb(), { ...blankRate(), rate_id: 'U-1', price_mid: 160, source: 'Urban QS', approval_status: 'urban_approved' }, NOW);
+    let book = upsertRate(rb(), { ...blankRate(), rate_id: 'U-1', price_mid: 160, source: 'Urban QS', approval_status: 'urban_approved', approver: 'QS lead', approved_at: '2026-10-01T00:00:00Z' }, NOW);
     const r = book.rates.find((x) => x.rate_id === 'U-1')!;
     book = upsertRate(book, { ...r, price_mid: 170 }, NOW);
     const after = book.rates.find((x) => x.rate_id === 'U-1')!;
@@ -69,7 +69,7 @@ describe('Ratebook administration', () => {
     const back = parseSavedEstimate(JSON.stringify(saved));
     expect(back.input).toEqual(input);
     expect(back.result.ownerTotal).toEqual(result.ownerTotal);
-    expect(back.ratebookVersion).toBe(1);
+    expect(back.ratebookVersion).toBe(2);
     expect(back.ratesUsed.map((r) => r.rate_id)).toEqual(['VR-02']);
     expect(calculateEstimate(back.input, rb(), NOW).ownerTotal).toEqual(result.ownerTotal);
     expect(() => parseSavedEstimate('{"kind":"other"}')).toThrow();

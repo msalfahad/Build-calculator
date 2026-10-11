@@ -20,6 +20,8 @@ export interface AlhisbaRun {
 export const ALHISBA_RUNS = alhisba.runs as AlhisbaRun[];
 export const ALHISBA_CATEGORIES = alhisba.categories as Record<string, string | number>[];
 export const ALHISBA_MATRIX = alhisba.test_matrix as Record<string, string | number | null>[];
+/** Source screenshot filenames per observation (stored in docs/research/evidence/alhisba/). */
+export const ALHISBA_SCREENSHOTS = alhisba.screenshots as Record<string, string[]>;
 
 const catKey = (runId: string) => `${runId.replace('-', '_')}_kwd`;
 

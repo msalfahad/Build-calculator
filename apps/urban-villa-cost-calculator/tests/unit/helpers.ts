@@ -22,7 +22,9 @@ export function threeFloors(over: Partial<EstimateInput> = {}): EstimateInput {
 
 export function withRate(book: Ratebook, r: Partial<Rate> & { rate_id: string }): Ratebook {
   const base = book.rates[0];
-  book.rates.push({ ...base, ...r } as Rate);
+  // approved test rates need a named approver (validation rule)
+  const approver = r.approval_status === 'urban_approved' ? { approver: 'Test QS' } : {};
+  book.rates.push({ ...base, ...approver, ...r } as Rate);
   return book;
 }
 

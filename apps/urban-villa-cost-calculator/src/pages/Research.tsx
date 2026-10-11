@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n';
 import { Note, NumberField, Num } from '../components/ui';
 import {
-  ALHISBA_MATRIX, ALHISBA_RUNS, COMPETITORS, PUBLISHED_RATES, TAQEEM, alhisbaCategoryAmounts, alhisbaReconciliation,
+  ALHISBA_MATRIX, ALHISBA_RUNS, ALHISBA_SCREENSHOTS, COMPETITORS, PUBLISHED_RATES, TAQEEM, alhisbaCategoryAmounts, alhisbaReconciliation,
   coverageArea, mfatahExample, taqeemDifference, varndaPublishedExample,
 } from '../calculators/research';
 import { mfatahExampleInput, varndaExampleInput } from '../lib/defaults';
@@ -44,9 +44,10 @@ function Alhisba() {
       <section className="card">
         <h2>{t('research.alObs')}</h2>
         <Note kind="warn">{t('research.alObsNote')}</Note>
+        <p className="xs muted">{t('research.docsNote')}</p>
         <div className="table-wrap">
           <table className="t" data-testid="alhisba-runs">
-            <thead><tr><th>{t('research.run')}</th><th>{t('research.scenario')}</th><th className="n">{t('research.plot')}</th><th className="n">{t('research.floors')}</th><th>{t('research.basement')}</th><th>{t('research.grade')}</th><th className="n">{t('research.area')}</th><th className="n">{t('research.total')}</th><th className="n">{t('research.catSum')}</th><th className="n">{t('research.gap')}</th><th className="n">{t('research.perM2')}</th><th>{t('research.status')}</th></tr></thead>
+            <thead><tr><th>{t('research.run')}</th><th>{t('research.scenario')}</th><th className="n">{t('research.plot')}</th><th className="n">{t('research.floors')}</th><th>{t('research.basement')}</th><th>{t('research.grade')}</th><th className="n">{t('research.area')}</th><th className="n">{t('research.total')}</th><th className="n">{t('research.catSum')}</th><th className="n">{t('research.gap')}</th><th className="n">{t('research.perM2')}</th><th>{t('research.status')}</th><th>{t('research.screens')}</th></tr></thead>
             <tbody>
               {recs.map(({ run, visibleSum, difference, normalizedKwdPerM2, fullyObserved }) => (
                 <tr key={run.run_id} className={fullyObserved ? 'observed' : ''}>
@@ -57,6 +58,7 @@ function Alhisba() {
                   <td className="n" style={{ color: 'var(--red-600)' }}><Num v={difference} /></td>
                   <td className="n">{normalizedKwdPerM2 !== null ? <Num v={normalizedKwdPerM2} /> : '—'}</td>
                   <td className="xs">{run.status}</td>
+                  <td className="xs">{(ALHISBA_SCREENSHOTS[run.run_id] ?? []).join(', ')}</td>
                 </tr>
               ))}
             </tbody>
@@ -116,11 +118,11 @@ function Alhisba() {
 }
 
 function Examples({ s }: { s: AppState }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const vr = varndaPublishedExample();
   const mf = mfatahExample();
   const al = alhisbaReconciliation('AL-004');
-  const load = (which: 'v' | 'm') => { s.setInput(which === 'v' ? varndaExampleInput() : mfatahExampleInput()); s.setReopened(null); s.go('results'); };
+  const load = (which: 'v' | 'm') => { s.setInput(which === 'v' ? varndaExampleInput(lang) : mfatahExampleInput(lang)); s.setReopened(null); s.go('results'); };
   return (
     <div className="grid3" style={{ alignItems: 'start' }}>
       <section className="card" data-testid="ex-varnda">

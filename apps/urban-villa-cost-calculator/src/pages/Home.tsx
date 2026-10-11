@@ -67,7 +67,7 @@ export default function Home({ s }: { s: AppState }) {
     s.go('wizard', 0);
   };
   const loadExample = (which: 'varnda' | 'mfatah') => {
-    s.setInput(which === 'varnda' ? varndaExampleInput() : mfatahExampleInput());
+    s.setInput(which === 'varnda' ? varndaExampleInput(lang) : mfatahExampleInput(lang));
     s.setReopened(null);
     s.go('results');
   };

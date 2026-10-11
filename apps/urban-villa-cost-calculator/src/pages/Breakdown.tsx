@@ -4,20 +4,43 @@ import { ResultActions } from '../components/ResultActions';
 import { UnpricedPanel } from '../components/IssuePanels';
 import { basisText } from '../reports/format';
 import type { AppState } from '../hooks/useAppState';
-import type { BudgetLine, EstimateResult } from '../types';
+import { SCENARIOS, type BudgetLine, type EstimateResult } from '../types';
+
+/** Per-scenario formulas for a line; collapses to one row when all three scenarios use identical maths. */
+export function ScenarioFormulas({ l }: { l: BudgetLine }) {
+  const { t } = useI18n();
+  const texts = SCENARIOS.map((k) => basisText(t, l, k));
+  if (texts[0] === texts[1] && texts[1] === texts[2]) return <div className="basis"><bdi>{texts[1]}</bdi></div>;
+  return (
+    <div className="basis scen" data-testid={`formulas-${l.key}`}>
+      {SCENARIOS.map((k, i) => (
+        <div key={k}><span className="scen-k">{t(`results.${k === 'mid' ? 'typical' : k}`)}:</span> <bdi>{texts[i]}</bdi></div>
+      ))}
+    </div>
+  );
+}
+
+export function KindBadge({ kind }: { kind: BudgetLine['kind'] }) {
+  const { t } = useI18n();
+  return <span className={`badge kind-${kind}`} title={t(`kind.${kind}D`) === `kind.${kind}D` ? undefined : t(`kind.${kind}D`)}>{t(`kind.${kind}`)}</span>;
+}
 
 export function BreakdownTable({ r, compact }: { r: EstimateResult; compact?: boolean }) {
   const { t } = useI18n();
   const partial = r.status === 'partial';
   const cons = r.lines.filter((l) => l.group === 'construction');
   const owner = r.lines.filter((l) => l.group === 'owner');
+  const noRange = !r.rangeAvailable;
   const row = (l: BudgetLine) => (
     <tr key={l.key} data-testid={`line-${l.key}`}>
-      <td><b>{t(`lines.${l.key}`)}</b><div className="basis">{basisText(t, l)}</div></td>
+      <td><b>{t(`lines.${l.key}`)}</b> <KindBadge kind={l.kind} /><ScenarioFormulas l={l} /></td>
       <td className="n"><Num v={l.amount.low} /></td>
       <td className="n"><b><Num v={l.amount.mid} /></b></td>
       <td className="n"><Num v={l.amount.high} /></td>
     </tr>
+  );
+  const tri = (v: { low: number; mid: number; high: number }, testId?: string) => (
+    <><td className="n"><Num v={v.low} /></td><td className="n" data-testid={testId}><Num v={v.mid} /></td><td className="n"><Num v={v.high} /></td></>
   );
   return (
     <div className="table-wrap">
@@ -26,18 +49,22 @@ export function BreakdownTable({ r, compact }: { r: EstimateResult; compact?: bo
           <tr><th>{t('breakdown.item')}</th><th className="n">{t('results.low')}</th><th className="n">{t('results.typical')}</th><th className="n">{t('results.high')}</th></tr>
         </thead>
         <tbody>
+          <tr className="sect"><td colSpan={4}>{t('breakdown.constructionSection')}</td></tr>
           {cons.map(row)}
           <tr className="sub">
             <td>{partial ? t('results.constructionPartial') : t('breakdown.constructionSubtotal')}</td>
-            <td className="n"><Num v={r.construction!.low} /></td><td className="n"><Num v={r.construction!.mid} /></td><td className="n"><Num v={r.construction!.high} /></td>
+            {tri(r.construction!, 'breakdown-construction')}
           </tr>
+          {owner.length > 0 && <tr className="sect"><td colSpan={4}>{t('breakdown.ownerAdditionalSection')}</td></tr>}
           {owner.map(row)}
+          {owner.length > 0 && <tr className="sub"><td>{t('results.ownerAdditional')}</td>{tri(r.ownerAdditional!)}</tr>}
           <tr className={`grand ${partial ? 'partial' : ''}`}>
             <td>{partial ? t('results.ownerTotalPartial') : t('breakdown.total')} ({t('common.kwd')})</td>
-            <td className="n"><Num v={r.ownerTotal!.low} /></td><td className="n" data-testid="breakdown-total"><Num v={r.ownerTotal!.mid} /></td><td className="n"><Num v={r.ownerTotal!.high} /></td>
+            {tri(r.ownerTotal!, 'breakdown-total')}
           </tr>
         </tbody>
       </table>
+      {noRange && <p className="xs" style={{ color: 'var(--amber-600)' }}>{t('results.noRangeNote')}</p>}
       {!compact && <p className="xs muted">{t('breakdown.rounding')}: {r.meta.rounding}</p>}
     </div>
   );
@@ -73,16 +100,17 @@ export function AdditionsTable({ r }: { r: EstimateResult }) {
   return (
     <div className="table-wrap">
       <table className="t">
-        <thead><tr><th>{t('breakdown.item')}</th><th className="n">{t('extras.qty')}</th><th className="n">{t('extras.rate')}</th><th className="n">{t('extras.gross')}</th><th className="n">{t('breakdown.allowance')}</th><th className="n">{t('extras.net')}</th></tr></thead>
+        <thead><tr><th>{t('breakdown.item')}</th><th>{t('breakdown.statusCol')}</th><th className="n">{t('extras.qty')}</th><th className="n">{t('extras.rate')}</th><th className="n">{t('extras.gross')}</th><th className="n">{t('breakdown.allowance')}</th><th className="n">{t('extras.net')}</th></tr></thead>
         <tbody>
           {r.additions.map((a) => (
             <tr key={a.id}>
-              <td>{a.description}<div className="basis">{a.source || '—'}</div></td>
+              <td>{a.description}<div className="basis"><bdi>{a.source || '—'}</bdi></div></td>
+              <td className="xs">{t(`scopeStatus.${a.status}`)}</td>
               <td className="n"><Num v={a.quantity} /> {a.unit}</td>
               <td className="n"><Num v={a.rate} /></td>
               <td className="n"><Num v={a.gross} /></td>
-              <td className="n">{a.includedInBaseline ? <Num v={a.allowance} /> : '—'}</td>
-              <td className="n">{a.priced ? <b><Num v={a.net} /></b> : <span style={{ color: 'var(--amber-600)' }}>{t('common.unpriced')}</span>}</td>
+              <td className="n">{a.status === 'upgrade' ? <Num v={a.allowance} /> : '—'}</td>
+              <td className="n">{a.status === 'baseline' || a.status === 'excluded' ? '—' : a.priced ? <b><Num v={a.net} /></b> : <span style={{ color: 'var(--amber-600)' }}>{t('common.unpriced')}</span>}</td>
             </tr>
           ))}
         </tbody>
@@ -105,6 +133,7 @@ export default function Breakdown({ s }: { s: AppState }) {
       </div>
       <section className="card">
         <BreakdownTable r={r} />
+        <Note>{t('breakdown.allocNote')}</Note>
         <Note>{t('breakdown.tradeNote')}</Note>
       </section>
       <div className="grid2">
