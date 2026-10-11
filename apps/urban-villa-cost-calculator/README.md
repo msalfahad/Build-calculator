@@ -18,6 +18,14 @@ This app is fully isolated. It does **not** touch, import or depend on the Urban
 
 Start with `URBAN_V2_IMPLEMENTATION_REPORT.md`. The research files are in `docs/research/`.
 
+## Web app (claude.ai Artifact)
+
+Published privately at https://claude.ai/artifact/CRrtTLa6dkCfTWyNW7ENe7 (only the owner can open it until it is shared from the page's Share menu).
+
+- Rebuild the single-file page with `npm run build:artifact` (writes `artifact/index.html`), then republish it.
+- **Download PDF** builds the 3-page A4 report in the browser. Inside the claude.ai viewer, files are saved through the viewer's download prompt.
+- **Account sync:** saved estimates, the rate library, calibration projects and the current draft sync to the signed-in user's private storage (`data/users/<id>/…`), with a copy kept in the browser. Nobody the page is shared with can read another person's data.
+
 ## Run locally
 
 Requirements: Node 18+ (tested on Node 22).

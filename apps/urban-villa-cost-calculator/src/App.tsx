@@ -40,6 +40,9 @@ export default function App() {
             ))}
           </nav>
           <div className="header-actions">
+            {s.cloud !== 'checking' && (
+              <span className={`sync-chip ${s.cloud}`} data-testid="sync-status"><i />{s.cloud === 'synced' ? t('app.synced') : t('app.localOnly')}</span>
+            )}
             <button className="lang-btn" onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} data-testid="lang-toggle" aria-label="Language">
               {t('app.lang')}
             </button>

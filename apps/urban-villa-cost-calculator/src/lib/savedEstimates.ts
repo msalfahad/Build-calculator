@@ -2,6 +2,7 @@ import type { EstimateInput, EstimateResult, Rate, Ratebook, SavedEstimate } fro
 import { ENGINE_VERSION } from '../calculators/finalBudget';
 import { migrateInput, newId } from './defaults';
 import { migrateRate } from './ratebookStore';
+import { saveFile } from '../platform/saveFile';
 
 const KEY = 'urban-vcc.saved.v1';
 
@@ -63,13 +64,5 @@ export function storeSaved(list: SavedEstimate[]) {
 }
 
 export function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return saveFile(filename, JSON.stringify(data, null, 2), 'application/json');
 }

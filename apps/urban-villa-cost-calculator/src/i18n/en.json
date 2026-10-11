@@ -10,7 +10,9 @@
    "saved": "Saved estimates",
    "ratebook": "Rate library",
    "research": "Research benchmarks"
-  }
+  },
+  "synced": "Synced to your account",
+  "localOnly": "Saved in this browser"
  },
  "home": {
   "title": "Kuwait Villa Cost Calculator",
@@ -480,7 +482,11 @@
   "confidence": "Evidence confidence",
   "level": "Estimate level",
   "refinedAnswers": "Refined estimate answers",
-  "areasByFloor": "Areas by floor"
+  "areasByFloor": "Areas by floor",
+  "downloadPdf": "Download PDF",
+  "pdfBusy": "Preparing PDF…",
+  "pdfSaved": "PDF ready.",
+  "pdfFailed": "The PDF could not be created. Try again."
  },
  "saved": {
   "title": "Saved estimates",

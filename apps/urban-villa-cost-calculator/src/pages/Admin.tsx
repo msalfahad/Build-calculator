@@ -1,4 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { cloudGet, cloudSet } from '../platform/cloud';
+import { saveFile } from '../platform/saveFile';
 import { useI18n } from '../i18n';
 import { ApprovalBadge, Icon, Modal, Note, NumberField, SelectField, Switch, TextField } from '../components/ui';
 import {
@@ -31,6 +33,7 @@ export default function Admin({ s }: { s: AppState }) {
   const [tab, setTab] = useState<Tab>('rates');
   const [editing, setEditing] = useState<Rate | null>(null);
   const [approving, setApproving] = useState<Rate | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const rb = s.ratebook;
 
@@ -52,7 +55,7 @@ export default function Admin({ s }: { s: AppState }) {
     }
   };
   const reset = () => {
-    if (!window.confirm(t('admin.resetConfirm'))) return;
+    setConfirmReset(false);
     const d = cloneRatebook(DEFAULT_RATEBOOK);
     const at = new Date().toISOString();
     const version = rb.ratebook_version + 1;
@@ -72,8 +75,15 @@ export default function Admin({ s }: { s: AppState }) {
         <button className="btn btn-ghost btn-sm" onClick={() => downloadJson(`urban-ratebook-v${rb.ratebook_version}.json`, rb)}>{t('admin.exportRb')}</button>
         <button className="btn btn-ghost btn-sm" onClick={() => file.current?.click()}>{t('admin.importRb')}</button>
         <input ref={file} type="file" accept=".json,application/json" hidden data-testid="import-ratebook" onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ''; }} />
-        <button className="btn btn-danger btn-sm" onClick={reset}>{t('admin.resetRb')}</button>
+        <button className="btn btn-danger btn-sm" onClick={() => setConfirmReset(true)} data-testid="reset-rb">{t('admin.resetRb')}</button>
       </div>
+      {confirmReset && (
+        <div className="note warn" role="alertdialog" style={{ alignItems: 'center' }} data-testid="reset-confirm">
+          <span style={{ flex: 1 }}>{t('admin.resetConfirm')}</span>
+          <button className="btn btn-danger btn-sm" onClick={reset} data-testid="reset-yes">{t('admin.resetRb')}</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setConfirmReset(false)}>{t('common.cancel')}</button>
+        </div>
+      )}
       <div className="tabs" role="tablist">
         {tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} data-testid={`atab-${k}`}>{t(`admin.${l}`)}</button>)}
       </div>
@@ -377,7 +387,17 @@ const loadCal = (): CalibrationProject[] => {
 function Calibration({ s }: { s: AppState }) {
   const { t, num } = useI18n();
   const [list, setListState] = useState<CalibrationProject[]>(loadCal);
-  const setList = (l: CalibrationProject[]) => { setListState(l); try { localStorage.setItem(CAL_KEY, JSON.stringify(l)); } catch { /* ignore */ } };
+  const setList = (l: CalibrationProject[]) => {
+    setListState(l);
+    try { localStorage.setItem(CAL_KEY, JSON.stringify(l)); } catch { /* ignore */ }
+    cloudSet('calibration', l);
+  };
+  // Pull the account copy once (private to this user).
+  useEffect(() => {
+    let off = false;
+    void cloudGet<CalibrationProject[]>('calibration').then((c) => { if (!off && c && Array.isArray(c.value)) setListState(c.value); });
+    return () => { off = true; };
+  }, []);
   const stats = calibrationStats(list);
   const blank = (): CalibrationProject => ({
     id: newId('cal'), name: '', location: '', date: '', builtUpArea: '', floors: '', basement: false, specification: '', contractorScope: 'turnkey',
@@ -416,10 +436,7 @@ function Calibration({ s }: { s: AppState }) {
       ))}
       <div className="row">
         <button className="btn btn-primary btn-sm" onClick={() => setList([...list, blank()])} data-testid="cal-add">{Icon.plus()} {t('admin.calAdd')}</button>
-        <button className="btn btn-ghost btn-sm" disabled={!list.length} onClick={() => {
-          const blob = new Blob([calibrationCsv(list)], { type: 'text/csv' });
-          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'urban-calibration.csv'; a.click();
-        }}>{t('admin.calExport')}</button>
+        <button className="btn btn-ghost btn-sm" disabled={!list.length} onClick={() => void saveFile('urban-calibration.csv', calibrationCsv(list), 'text/csv')}>{t('admin.calExport')}</button>
       </div>
       <p className="xs muted">{t('admin.calTemplate')}</p>
       <span className="sr-only">{s.ratebook.ratebook_version}</span>

@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { calculateEstimate } from '../calculators';
 import { defaultInput, migrateInput } from '../lib/defaults';
 import { loadRatebook, saveRatebook } from '../lib/ratebookStore';
 import { listSaved, ratebookWithSnapshot, storeSaved } from '../lib/savedEstimates';
+import { migrateRatebook, validateRatebook, ADMIN_ENABLED } from '../lib/ratebookStore';
+import { IS_ARTIFACT } from '../platform/env';
+import { cloudDeleteEstimate, cloudGet, cloudListEstimates, cloudPutEstimate, cloudSet, initCloud } from '../platform/cloud';
 import type { EstimateInput, Ratebook, SavedEstimate } from '../types';
 
 export type View = 'home' | 'wizard' | 'results' | 'breakdown' | 'report' | 'saved' | 'admin' | 'research';
@@ -10,6 +13,8 @@ const VIEWS: View[] = ['home', 'wizard', 'results', 'breakdown', 'report', 'save
 const DRAFT_KEY = 'urban-vcc.draft.v1';
 
 function readHash(): { view: View; step: number } {
+  // Inside the claude.ai viewer only plain #anchors reach the page, so navigation stays in memory.
+  if (IS_ARTIFACT) return { view: 'home', step: 0 };
   const m = window.location.hash.match(/^#\/(\w+)(?:\/(\d))?/);
   const view = (m && VIEWS.includes(m[1] as View) ? m[1] : 'home') as View;
   return { view, step: m && m[2] ? Math.min(5, Number(m[2])) : 0 };
@@ -44,13 +49,45 @@ export function useAppState() {
     return () => window.removeEventListener('hashchange', on);
   }, []);
 
+  const [cloud, setCloud] = useState<'checking' | 'synced' | 'local'>('checking');
+  const hydrated = useRef(false);
+
   useEffect(() => {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(input));
     } catch {
       /* ignore */
     }
+    if (hydrated.current) cloudSet('draft', input, 1500);
   }, [input]);
+
+  // Account sync: pull the user's private copy once, or seed it from this browser on first use.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const c = await initCloud();
+      if (cancelled) return;
+      if (!c) {
+        setCloud('local');
+        return;
+      }
+      const [rb, draft, list] = await Promise.all([cloudGet<Ratebook>('ratebook'), cloudGet<EstimateInput>('draft'), cloudListEstimates<SavedEstimate>()]);
+      if (cancelled) return;
+      if (rb && ADMIN_ENABLED) {
+        const m = migrateRatebook(rb.value);
+        if (!validateRatebook(m)) { setRatebookState(m); saveRatebook(m); }
+      } else if (ADMIN_ENABLED) cloudSet('ratebook', loadRatebook(), 0);
+      if (draft) setInput(migrateInput(draft.value));
+      if (list && list.length) {
+        const sorted = [...list].sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+        setSavedState(sorted);
+        storeSaved(sorted);
+      } else listSaved().forEach((e) => void cloudPutEstimate(e.id, e));
+      hydrated.current = true;
+      setCloud('synced');
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -60,7 +97,7 @@ export function useAppState() {
 
   const go = useCallback((v: View, s = 0) => {
     const hash = v === 'wizard' ? `#/wizard/${s}` : `#/${v}`;
-    if (window.location.hash !== hash) window.location.hash = hash;
+    if (!IS_ARTIFACT && window.location.hash !== hash) window.location.hash = hash;
     setRoute({ view: v, step: s });
     window.scrollTo({ top: 0 });
   }, []);
@@ -68,10 +105,17 @@ export function useAppState() {
   const setRatebook = useCallback((rb: Ratebook) => {
     setRatebookState(rb);
     saveRatebook(rb);
+    if (ADMIN_ENABLED) cloudSet('ratebook', rb);
   }, []);
 
   const setSaved = useCallback((list: SavedEstimate[]) => {
-    setSavedState(list);
+    setSavedState((prev) => {
+      const ids = new Set(list.map((e) => e.id));
+      prev.filter((e) => !ids.has(e.id)).forEach((e) => void cloudDeleteEstimate(e.id));
+      const old = new Set(prev.map((e) => e.id));
+      list.filter((e) => !old.has(e.id)).forEach((e) => void cloudPutEstimate(e.id, e));
+      return list;
+    });
     storeSaved(list);
   }, []);
 
@@ -79,7 +123,7 @@ export function useAppState() {
   const effectiveRatebook = useMemo(() => (reopened && useSnapshot ? ratebookWithSnapshot(ratebook, reopened) : ratebook), [ratebook, reopened, useSnapshot]);
   const result = useMemo(() => calculateEstimate(input, effectiveRatebook), [input, effectiveRatebook]);
 
-  return { view, step, go, input, setInput, ratebook, setRatebook, saved, setSaved, result, toast, setToast, reopened, setReopened, useSnapshot, setUseSnapshot, effectiveRatebook };
+  return { view, step, go, input, setInput, ratebook, setRatebook, saved, setSaved, result, toast, setToast, reopened, setReopened, useSnapshot, setUseSnapshot, effectiveRatebook, cloud };
 }
 
 export type AppState = ReturnType<typeof useAppState>;

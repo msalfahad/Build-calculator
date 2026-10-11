@@ -1,4 +1,8 @@
+import { useRef, useState } from 'react';
 import { useI18n } from '../i18n';
+import { IS_ARTIFACT } from '../platform/env';
+import { reportToPdf } from '../platform/pdf';
+import { saveFile } from '../platform/saveFile';
 import { Icon, LogoMark, Note, Num } from '../components/ui';
 import { AdditionsTable, KindBadge } from './Breakdown';
 import { useScopeLists } from '../components/ScopeMatrix';
@@ -12,6 +16,23 @@ export default function Report({ s }: { s: AppState }) {
   const r = s.result;
   const input = s.input;
   const L = useScopeLists(r);
+  const reportRef = useRef<HTMLElement>(null);
+  const [busy, setBusy] = useState(false);
+  const downloadPdf = async () => {
+    if (!reportRef.current || busy) return;
+    setBusy(true);
+    try {
+      const blob = await reportToPdf(reportRef.current);
+      // ASCII file name: some browsers reject non-Latin download names.
+      const out = await saveFile(`urban-villa-estimate-${lang}-${new Date().toISOString().slice(0, 10)}.pdf`, blob, 'application/pdf');
+      if (out === 'saved') s.setToast(t('report.pdfSaved'));
+      else if (out === 'failed') s.setToast(t('report.pdfFailed'));
+    } catch {
+      s.setToast(t('report.pdfFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
   if (r.status === 'blocked') {
     return <div className="card"><Note kind="err">{t('results.blockedTitle')}</Note><button className="btn btn-primary" onClick={() => s.go('results')}>{Icon.back()} {t('common.back')}</button></div>;
   }
@@ -88,15 +109,16 @@ export default function Report({ s }: { s: AppState }) {
     <div className="fade-in">
       <div className="report-toolbar no-print">
         <button className="btn btn-ghost btn-sm" onClick={() => s.go('results')}>{Icon.back()} {t('report.back')}</button>
-        <button className="btn btn-primary btn-sm" onClick={() => window.print()} data-testid="print-report">{Icon.print()} {t('report.print')}</button>
+        <button className="btn btn-primary btn-sm" onClick={downloadPdf} disabled={busy} data-testid="download-pdf">{Icon.download()} {busy ? t('report.pdfBusy') : t('report.downloadPdf')}</button>
+        {!IS_ARTIFACT && <button className="btn btn-ghost btn-sm" onClick={() => window.print()} data-testid="print-report">{Icon.print()} {t('report.print')}</button>}
         <div className="chips" role="radiogroup" aria-label="Report language">
           <button className="chip" role="radio" aria-checked={lang === 'en'} onClick={() => setLang('en')}>English</button>
           <button className="chip" role="radio" aria-checked={lang === 'ar'} onClick={() => setLang('ar')}>العربية</button>
         </div>
-        <span className="xs muted">{t('report.printHint')}</span>
+        {!IS_ARTIFACT && <span className="xs muted">{t('report.printHint')}</span>}
       </div>
 
-      <article className="report" data-testid="report">
+      <article className="report" data-testid="report" ref={reportRef}>
         {/* ---------------- Page 1: executive summary ---------------- */}
         <div className="rpage">
           <Header />

@@ -2,7 +2,7 @@
   "name": "urban-villa-cost-calculator",
   "private": true,
   "version": "1.0.0",
-  "description": "Urban Projects — Kuwait Villa Cost Calculator (standalone; does not touch the BOQ engine)",
+  "description": "Urban Projects \u2014 Kuwait Villa Cost Calculator (standalone; does not touch the BOQ engine)",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,10 +11,13 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:artifact": "vite build -c vite.artifact.config.ts && node scripts/build-artifact.mjs"
   },
   "dependencies": {
     "decimal.js": "10.4.3",
+    "html2canvas": "1.4.1",
+    "jspdf": "2.5.2",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
