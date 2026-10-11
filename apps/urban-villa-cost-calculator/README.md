@@ -1,0 +1,72 @@
+# Urban Projects — Villa Cost Calculator · حاسبة تكلفة بناء القسيمة
+
+A standalone, bilingual (Arabic RTL / English LTR), mobile-first web app that produces a **preliminary construction budget** for a private residential villa in Kuwait in 30–60 seconds, in Kuwaiti Dinar (KWD).
+
+> Preliminary planning estimate only. Not a contractor quotation, not a priced BOQ, not structural design.
+> The default rates are **published third-party research/demo benchmarks** (Varnda, MFatah). None of them is an Urban-approved rate.
+
+This app is fully isolated. It does **not** touch, import or depend on the Urban BOQ / quantity-takeoff engine, DWG/DXF/PDF extraction, S8.7 work, benchmark fixtures or any production database.
+
+## Run locally
+
+Requirements: Node 18+ (tested on Node 22).
+
+```bash
+cd apps/urban-villa-cost-calculator
+npm install
+npm run dev          # http://localhost:5173
+```
+
+Production build (static files, works from any static host or file server):
+
+```bash
+npm run build        # outputs dist/
+npm run preview      # http://localhost:4173
+```
+
+## Tests
+
+```bash
+npm test             # 79 deterministic Vitest unit tests (calculation engine, validation, ratebook, JSON round-trip)
+npm run typecheck    # strict TypeScript
+npm run build && npm run test:e2e
+                     # 22 Playwright tests (desktop + iPhone 13), including Arabic/English PDF generation
+```
+
+If Playwright cannot find a browser, point it at an installed Chromium:
+`PW_CHROMIUM=/path/to/chrome npm run test:e2e`.
+
+Latest results are saved in `docs/test-results/`. Sample PDFs are in `docs/sample-reports/` and screenshots in `docs/screenshots/`.
+
+## What's inside
+
+| Path | Purpose |
+|---|---|
+| `src/calculators/` | **Deterministic calculation engine** (no UI imports): `buildingArea.ts`, `rateSelection.ts`, `quickEstimate.ts`, `basementEstimate.ts`, `optionalItems.ts`, `finalBudget.ts`; research arithmetic isolated in `research.ts` |
+| `src/validation/parse.ts` | Number parsing: rejects NaN, Infinity, negatives and text; accepts Arabic-Indic digits |
+| `src/data/ratebook.json` | Default version-controlled ratebook (research/demo benchmarks + finishing-grade specifications) |
+| `src/data/alhisbaObservations.json`, `benchmarkSources.json` | Alhisba, Taqeem, published-rate and competitor research data (from the research package) |
+| `src/i18n/en.json`, `ar.json` | Complete English and Arabic dictionaries (same keys) |
+| `src/pages/` | Home, Wizard (5 steps), Results, Breakdown, Report (print/PDF), Saved, Admin ratebook, Research |
+| `src/lib/` | Defaults and presets, ratebook store (validation, change log, approval protection), saved estimates |
+| `tests/unit`, `tests/e2e` | Vitest and Playwright suites |
+
+## Using it
+
+1. **Start estimate** → property → floors (with optional, clearly-labelled 80% area suggestion) → basement → scope and finishing grade → additions, owner purchases and fees → **Results**.
+2. **Results** show low / typical / high construction cost, the total built-up area, the typical KWD/m², fees and contingency, and the total owner budget. Every figure is labelled with its rate source and approval status.
+3. **View breakdown**: every line shows its formula. Lines always reconcile exactly to the totals.
+4. **Report / PDF**: a 15-section A4 report in Arabic or English. Use the browser's *Print → Save as PDF*.
+5. **Save** (this browser), **Export JSON**, re-import from **Saved estimates**.
+6. **Rate library**: add or edit rates (low / typical / high, scope, grade, price basis, source, date, quotation reference, approval status, inclusions and exclusions), activate or deactivate them, view the change log, and import or export the ratebook as JSON.
+7. **Research benchmarks**: Alhisba observations and their reconciliation gaps, the 18-scenario matrix, Taqeem, published rates, and the reference calculations (170,600 / 144,000 / 122,000).
+
+### Entering Urban's own prices
+
+Open **Rate library → Add rate**. Choose category *Building*, the scope (turnkey / structure only / finishing only), the Urban grade, and the prices. Set the status to **Urban-approved rate** and record the source and date. When estimating, the app automatically prefers an Urban-approved rate over a published benchmark for the same scope and grade. If you later change the price of an approved rate, it drops back to *provisional* unless you approve it again in the same edit.
+
+## Security note
+
+Version 1 stores the ratebook and saved estimates in the browser's `localStorage`. The admin screen has **no authentication**. Do not deploy it publicly with editable admin pricing. If you integrate it into the Urban Firebase environment, put the ratebook behind authenticated, role-checked writes.
+
+See `URBAN_CALCULATOR_IMPLEMENTATION_REPORT.md` for formulas, sources, assumptions, limitations and next steps.

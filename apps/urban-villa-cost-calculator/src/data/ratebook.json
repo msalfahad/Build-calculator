@@ -1,0 +1,464 @@
+{
+  "schema": "urban-ratebook",
+  "schema_version": 1,
+  "ratebook_version": 1,
+  "updated_at": "2026-10-11T00:00:00.000Z",
+  "rates": [
+    {
+      "rate_id": "VR-01",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "basic",
+      "grade_system": "urban",
+      "label_en": "Varnda published tier — Basic",
+      "label_ar": "فارندا (منشور) — اقتصادي",
+      "unit": "KWD/m2",
+      "price_low": 115,
+      "price_mid": 125,
+      "price_high": 140,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "Varnda Kuwait (published illustrative tier, S05)",
+      "source_url": "https://varnda.com/kw/حاسبة-تكلفة-البناء-للمتر-المربع",
+      "source_date": "2026-08-06",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
+      "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
+      "notes": "Research/demo data. Not an Urban-approved rate. Building area not plot.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "VR-02",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "medium",
+      "grade_system": "urban",
+      "label_en": "Varnda published tier — Medium",
+      "label_ar": "فارندا (منشور) — متوسط",
+      "unit": "KWD/m2",
+      "price_low": 135,
+      "price_mid": 150,
+      "price_high": 170,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "Varnda Kuwait (published illustrative tier, S05)",
+      "source_url": "https://varnda.com/kw/حاسبة-تكلفة-البناء-للمتر-المربع",
+      "source_date": "2026-08-06",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
+      "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
+      "notes": "Research/demo data. Not an Urban-approved rate.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "VR-03",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "good",
+      "grade_system": "urban",
+      "label_en": "Varnda published tier — Good",
+      "label_ar": "فارندا (منشور) — جيد",
+      "unit": "KWD/m2",
+      "price_low": 160,
+      "price_mid": 175,
+      "price_high": 195,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "Varnda Kuwait (published illustrative tier, S05)",
+      "source_url": "https://varnda.com/kw/حاسبة-تكلفة-البناء-للمتر-المربع",
+      "source_date": "2026-08-06",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
+      "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
+      "notes": "Research/demo data. No owner-specific specification.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "VR-04",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "luxury",
+      "grade_system": "urban",
+      "label_en": "Varnda published tier — Luxury",
+      "label_ar": "فارندا (منشور) — فاخر",
+      "unit": "KWD/m2",
+      "price_low": 210,
+      "price_mid": 240,
+      "price_high": 280,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "Varnda Kuwait (published illustrative tier, S05)",
+      "source_url": "https://varnda.com/kw/حاسبة-تكلفة-البناء-للمتر-المربع",
+      "source_date": "2026-08-06",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
+      "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
+      "notes": "Research/demo data. No custom villa facade premium verified.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "VR-05",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "ultra",
+      "grade_system": "urban",
+      "label_en": "Varnda published tier — Ultra Luxury",
+      "label_ar": "فارندا (منشور) — فاخر جداً",
+      "unit": "KWD/m2",
+      "price_low": 300,
+      "price_mid": 360,
+      "price_high": 430,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "Varnda Kuwait (published illustrative tier, S05)",
+      "source_url": "https://varnda.com/kw/حاسبة-تكلفة-البناء-للمتر-المربع",
+      "source_date": "2026-08-06",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Turnkey building per m² of built-up area (not plot), as described in the publisher's illustrative tier table.",
+      "exclusions": "Basement, land, special extras, owner-specific specification. Scope not audited.",
+      "notes": "Research/demo data. Do not extrapolate trade prices.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "MF-01",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "normal",
+      "grade_system": "mfatah",
+      "label_en": "MFatah advertised — Normal",
+      "label_ar": "مفتاح (إعلان) — عادي",
+      "unit": "KWD/m2",
+      "price_low": null,
+      "price_mid": 120,
+      "price_high": null,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "MFatah Kuwait (advertised contractor rate, S06)",
+      "source_url": "https://mfatah.com/house-building-cost-kuwait/",
+      "source_date": "2026-10-07",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
+      "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "MF-02",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "deluxe",
+      "grade_system": "mfatah",
+      "label_en": "MFatah advertised — Deluxe",
+      "label_ar": "مفتاح (إعلان) — ديلوكس",
+      "unit": "KWD/m2",
+      "price_low": null,
+      "price_mid": 150,
+      "price_high": null,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "MFatah Kuwait (advertised contractor rate, S06)",
+      "source_url": "https://mfatah.com/house-building-cost-kuwait/",
+      "source_date": "2026-10-07",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
+      "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "version": 1,
+      "active": true
+    },
+    {
+      "rate_id": "MF-03",
+      "category": "building",
+      "scope": "turnkey",
+      "grade": "super_deluxe",
+      "grade_system": "mfatah",
+      "label_en": "MFatah advertised — Super Deluxe",
+      "label_ar": "مفتاح (إعلان) — سوبر ديلوكس",
+      "unit": "KWD/m2",
+      "price_low": null,
+      "price_mid": 190,
+      "price_high": null,
+      "currency": "KWD",
+      "price_basis": "supply_install",
+      "source": "MFatah Kuwait (advertised contractor rate, S06)",
+      "source_url": "https://mfatah.com/house-building-cost-kuwait/",
+      "source_date": "2026-10-07",
+      "valid_until": "",
+      "quote_ref": "",
+      "approval_status": "published_benchmark",
+      "inclusions": "Structure, finishes, AC and electrical as advertised by the contractor.",
+      "exclusions": "Basement, land, owner extras. Advertised offer, not an awarded contract.",
+      "notes": "MFatah grading system — not mapped to Urban grades. Single reference value; no published range.",
+      "version": 1,
+      "active": true
+    }
+  ],
+  "grades": [
+    {
+      "grade": "basic",
+      "name_en": "Basic",
+      "name_ar": "اقتصادي",
+      "summary_en": "Economical, durable finishes for a practical family home.",
+      "summary_ar": "تشطيبات اقتصادية ومتينة لمنزل عائلي عملي.",
+      "items": [
+        {
+          "key": "floor",
+          "en": "Standard local ceramic / porcelain flooring",
+          "ar": "أرضيات سيراميك / بورسلان محلي قياسي"
+        },
+        {
+          "key": "alu",
+          "en": "Standard aluminium windows, standard glazing",
+          "ar": "ألمنيوم قياسي مع زجاج عادي"
+        },
+        {
+          "key": "doors",
+          "en": "Flush internal doors",
+          "ar": "أبواب داخلية مسطحة (فلش)"
+        },
+        {
+          "key": "sanitary",
+          "en": "Standard sanitary fittings",
+          "ar": "أدوات صحية قياسية"
+        },
+        {
+          "key": "kitchen",
+          "en": "Basic kitchen allowance",
+          "ar": "مخصص مطبخ أساسي"
+        },
+        {
+          "key": "walls",
+          "en": "Emulsion paint walls",
+          "ar": "دهان جدران عادي"
+        },
+        {
+          "key": "ceiling",
+          "en": "Limited plain gypsum ceilings",
+          "ar": "أسقف جبسية بسيطة ومحدودة"
+        },
+        {
+          "key": "facade",
+          "en": "Painted plaster facade",
+          "ar": "واجهة لياسة مع دهان"
+        }
+      ]
+    },
+    {
+      "grade": "medium",
+      "name_en": "Medium",
+      "name_ar": "متوسط",
+      "summary_en": "Good standard materials and branded fittings.",
+      "summary_ar": "مواد بمستوى جيد وأدوات ذات علامات تجارية معروفة.",
+      "items": [
+        {
+          "key": "floor",
+          "en": "Good-standard porcelain flooring",
+          "ar": "أرضيات بورسلان بمستوى جيد"
+        },
+        {
+          "key": "alu",
+          "en": "Quality aluminium systems",
+          "ar": "أنظمة ألمنيوم ذات جودة"
+        },
+        {
+          "key": "doors",
+          "en": "Solid-core internal doors",
+          "ar": "أبواب داخلية مصمتة"
+        },
+        {
+          "key": "sanitary",
+          "en": "Branded sanitary ware",
+          "ar": "أدوات صحية بعلامات تجارية"
+        },
+        {
+          "key": "kitchen",
+          "en": "Standard kitchen allowance",
+          "ar": "مخصص مطبخ قياسي"
+        },
+        {
+          "key": "walls",
+          "en": "Quality paint system",
+          "ar": "نظام دهان عالي الجودة"
+        },
+        {
+          "key": "ceiling",
+          "en": "Gypsum ceilings in main rooms",
+          "ar": "أسقف جبسية في الغرف الرئيسية"
+        },
+        {
+          "key": "facade",
+          "en": "Paint with partial cladding allowance",
+          "ar": "دهان مع مخصص تكسية جزئي"
+        }
+      ]
+    },
+    {
+      "grade": "good",
+      "name_en": "Good",
+      "name_ar": "جيد",
+      "summary_en": "Upgraded materials, better glazing and partial cladding.",
+      "summary_ar": "مواد مطوّرة وزجاج أفضل وتكسية جزئية للواجهات.",
+      "items": [
+        {
+          "key": "floor",
+          "en": "Large-format porcelain",
+          "ar": "بورسلان مقاسات كبيرة"
+        },
+        {
+          "key": "alu",
+          "en": "Thermal-break aluminium, double glazing",
+          "ar": "ألمنيوم عازل حرارياً مع زجاج مزدوج"
+        },
+        {
+          "key": "doors",
+          "en": "Upgraded solid doors",
+          "ar": "أبواب مصمتة مطوّرة"
+        },
+        {
+          "key": "sanitary",
+          "en": "Mid-range branded sanitary ware",
+          "ar": "أدوات صحية بعلامات متوسطة الفئة"
+        },
+        {
+          "key": "kitchen",
+          "en": "Enhanced kitchen allowance",
+          "ar": "مخصص مطبخ محسّن"
+        },
+        {
+          "key": "walls",
+          "en": "Feature wall finishes in reception",
+          "ar": "تشطيبات جدران مميزة في الاستقبال"
+        },
+        {
+          "key": "ceiling",
+          "en": "Decorative gypsum ceilings",
+          "ar": "أسقف جبسية ديكورية"
+        },
+        {
+          "key": "facade",
+          "en": "Stone / porcelain cladding on main facade",
+          "ar": "تكسية حجر / بورسلان للواجهة الرئيسية"
+        }
+      ]
+    },
+    {
+      "grade": "luxury",
+      "name_en": "Luxury",
+      "name_ar": "فاخر",
+      "summary_en": "Premium materials, premium systems and natural stone.",
+      "summary_ar": "مواد فاخرة وأنظمة متميزة وحجر طبيعي.",
+      "items": [
+        {
+          "key": "floor",
+          "en": "Premium porcelain / marble in main areas",
+          "ar": "بورسلان فاخر / رخام في المساحات الرئيسية"
+        },
+        {
+          "key": "alu",
+          "en": "Premium aluminium and glazing systems",
+          "ar": "أنظمة ألمنيوم وزجاج فاخرة"
+        },
+        {
+          "key": "doors",
+          "en": "Hardwood internal doors",
+          "ar": "أبواب داخلية من الخشب الصلب"
+        },
+        {
+          "key": "sanitary",
+          "en": "Premium sanitary ware",
+          "ar": "أدوات صحية فاخرة"
+        },
+        {
+          "key": "kitchen",
+          "en": "Premium kitchen allowance",
+          "ar": "مخصص مطبخ فاخر"
+        },
+        {
+          "key": "walls",
+          "en": "Premium wall finishes",
+          "ar": "تشطيبات جدران فاخرة"
+        },
+        {
+          "key": "ceiling",
+          "en": "Feature ceilings with lighting design",
+          "ar": "أسقف مميزة مع تصميم إضاءة"
+        },
+        {
+          "key": "facade",
+          "en": "Natural stone facade",
+          "ar": "واجهة حجر طبيعي"
+        }
+      ]
+    },
+    {
+      "grade": "ultra",
+      "name_en": "Ultra Luxury",
+      "name_ar": "فاخر جداً",
+      "summary_en": "Bespoke design-led finishes throughout.",
+      "summary_ar": "تشطيبات مصممة حسب الطلب في كامل المبنى.",
+      "items": [
+        {
+          "key": "floor",
+          "en": "Bespoke natural stone",
+          "ar": "حجر طبيعي حسب الطلب"
+        },
+        {
+          "key": "alu",
+          "en": "Architectural glazing systems",
+          "ar": "أنظمة زجاج معمارية"
+        },
+        {
+          "key": "doors",
+          "en": "Custom joinery",
+          "ar": "نجارة حسب الطلب"
+        },
+        {
+          "key": "sanitary",
+          "en": "Designer sanitary ware",
+          "ar": "أدوات صحية من مصممين"
+        },
+        {
+          "key": "kitchen",
+          "en": "Bespoke kitchen allowance",
+          "ar": "مخصص مطبخ حسب الطلب"
+        },
+        {
+          "key": "walls",
+          "en": "Bespoke wall finishes",
+          "ar": "تشطيبات جدران حسب الطلب"
+        },
+        {
+          "key": "ceiling",
+          "en": "Full feature ceilings",
+          "ar": "أسقف مميزة بالكامل"
+        },
+        {
+          "key": "facade",
+          "en": "Premium cladding / stone facade",
+          "ar": "واجهة تكسية / حجر فاخرة"
+        }
+      ]
+    }
+  ],
+  "changelog": []
+}
