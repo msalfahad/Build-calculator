@@ -5,7 +5,7 @@ import { loadRatebook, saveRatebook } from '../lib/ratebookStore';
 import { listSaved, ratebookWithSnapshot, storeSaved } from '../lib/savedEstimates';
 import { migrateRatebook, validateRatebook, ADMIN_ENABLED } from '../lib/ratebookStore';
 import { IS_ARTIFACT } from '../platform/env';
-import { cloudDeleteEstimate, cloudGet, cloudListEstimates, cloudPutEstimate, cloudSet, initCloud } from '../platform/cloud';
+import { cloudDeleteEstimate, cloudGet, cloudListEstimates, cloudPutEstimate, cloudSet, initCloud, markSynced, onCloudStatus, type CloudStatus } from '../platform/cloud';
 import type { EstimateInput, Ratebook, SavedEstimate } from '../types';
 
 export type View = 'home' | 'wizard' | 'results' | 'breakdown' | 'report' | 'saved' | 'admin' | 'research';
@@ -49,7 +49,8 @@ export function useAppState() {
     return () => window.removeEventListener('hashchange', on);
   }, []);
 
-  const [cloud, setCloud] = useState<'checking' | 'synced' | 'local'>('checking');
+  const [cloud, setCloud] = useState<CloudStatus>('checking');
+  useEffect(() => { const off = onCloudStatus(setCloud); return () => { off(); }; }, []);
   const hydrated = useRef(false);
 
   useEffect(() => {
@@ -67,16 +68,13 @@ export function useAppState() {
     (async () => {
       const c = await initCloud();
       if (cancelled) return;
-      if (!c) {
-        setCloud('local');
-        return;
-      }
+      if (!c) return; // status listener reports 'local'
       const [rb, draft, list] = await Promise.all([cloudGet<Ratebook>('ratebook'), cloudGet<EstimateInput>('draft'), cloudListEstimates<SavedEstimate>()]);
       if (cancelled) return;
       if (rb && ADMIN_ENABLED) {
         const m = migrateRatebook(rb.value);
         if (!validateRatebook(m)) { setRatebookState(m); saveRatebook(m); }
-      } else if (ADMIN_ENABLED) cloudSet('ratebook', loadRatebook(), 0);
+      }
       if (draft) setInput(migrateInput(draft.value));
       if (list && list.length) {
         const sorted = [...list].sort((a, b) => b.savedAt.localeCompare(a.savedAt));
@@ -84,7 +82,8 @@ export function useAppState() {
         storeSaved(sorted);
       } else listSaved().forEach((e) => void cloudPutEstimate(e.id, e));
       hydrated.current = true;
-      setCloud('synced');
+      // An account copy that already exists proves this visitor can sync; otherwise the first write decides.
+      if (rb || draft || (list && list.length)) markSynced();
     })();
     return () => { cancelled = true; };
   }, []);

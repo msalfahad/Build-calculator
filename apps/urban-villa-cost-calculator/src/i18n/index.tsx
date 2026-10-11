@@ -60,7 +60,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = dir;
-    document.title = lang === 'ar' ? 'حاسبة تكلفة بناء القسيمة — أوربن بروجكتس' : 'Urban Villa Cost Calculator';
+    document.title = lang === 'ar' ? 'حاسبة تكلفة بناء القسيمة' : 'Villa Cost Calculator';
   }, [lang, dir]);
   const value = useMemo<I18nCtx>(() => {
     const t = makeT(lang);

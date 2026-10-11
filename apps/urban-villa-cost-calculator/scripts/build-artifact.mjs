@@ -12,8 +12,8 @@ const js = fs.readFileSync(path.join(dist, jsRef[1]), 'utf8').replace(/<\/script
 const css = cssRef ? fs.readFileSync(path.join(dist, cssRef[1]), 'utf8').replace(/<\/style/gi, '<\\/style') : '';
 if (/url\((?!data:|["']?data:)/.test(css)) throw new Error('CSS still references external files');
 
-const page = `<title>Urban Villa Cost Calculator</title>
-<meta name="description" content="Urban Projects — Kuwait villa construction cost calculator (Arabic / English)">
+const page = `<title>Villa Cost Calculator</title>
+<meta name="description" content="Villa Cost Calculator by Urban Projects — Kuwait villa construction cost estimates (Arabic / English)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">

@@ -13,6 +13,27 @@ type User = { id(): Promise<string | null> };
 
 let ready: Promise<{ db: DB; uid: string } | null> | null = null;
 
+/**
+ * Whether this visitor can actually write to their private storage. Unknown until the first write:
+ * visitors from outside the organization (e.g. opening a shared link) can read nothing and write
+ * nothing, so their writes are refused and the app stays on browser storage.
+ */
+export type CloudStatus = 'checking' | 'synced' | 'local';
+let status: CloudStatus = 'checking';
+const listeners = new Set<(s: CloudStatus) => void>();
+function setStatus(s: CloudStatus) {
+  if (status === s || (status === 'local' && s === 'synced')) return;
+  status = s;
+  listeners.forEach((fn) => fn(s));
+}
+export function onCloudStatus(fn: (s: CloudStatus) => void) {
+  listeners.add(fn);
+  fn(status);
+  return () => listeners.delete(fn);
+}
+/** Mark sync confirmed (e.g. an account copy already exists). */
+export function markSynced() { setStatus('synced'); }
+
 export function initCloud() {
   if (!ready) {
     ready = (async () => {
@@ -21,6 +42,7 @@ export function initCloud() {
       const uid = await user.id().catch(() => null);
       return uid ? { db, uid } : null;
     })();
+    void ready.then((c) => { if (!c) setStatus('local'); });
   }
   return ready;
 }
@@ -53,15 +75,16 @@ export function cloudSet(key: string, value: unknown, delayMs = 800) {
 async function flush(key: string) {
   if (writing.has(key) || !pending.has(key)) return;
   const c = await initCloud();
-  if (!c) return;
+  if (!c || status === 'local') { pending.delete(key); return; }
   const value = pending.get(key);
   pending.delete(key);
   writing.add(key);
   try {
     // JSON round-trip strips undefined values the store would reject.
     await c.db.doc(docPath(c.uid, key)).set({ value: JSON.parse(JSON.stringify(value)), updatedAt: new Date().toISOString() });
-  } catch {
-    /* browser copy remains; next change retries */
+    setStatus('synced');
+  } catch (e) {
+    onWriteError(e);
   } finally {
     writing.delete(key);
     if (pending.has(key)) void flush(key);
@@ -84,17 +107,25 @@ export async function cloudListEstimates<T>(): Promise<T[] | null> {
 
 export async function cloudPutEstimate(id: string, value: unknown) {
   const c = await initCloud();
-  if (!c) return;
+  if (!c || status === 'local') return;
   try {
     await estimates(c).doc(id).set({ value: JSON.parse(JSON.stringify(value)), updatedAt: new Date().toISOString() });
-  } catch {
-    /* ignore */
+    setStatus('synced');
+  } catch (e) {
+    onWriteError(e);
   }
+}
+
+// A refused write (no write access) or a lost grant means this visit stays on browser storage.
+function onWriteError(e: unknown) {
+  const code = (e as { code?: string })?.code;
+  if (code === 'unavailable' || code === 'resource_exhausted') return; // transient: next change retries
+  setStatus('local');
 }
 
 export async function cloudDeleteEstimate(id: string) {
   const c = await initCloud();
-  if (!c) return;
+  if (!c || status === 'local') return;
   try {
     await estimates(c).doc(id).delete();
   } catch {

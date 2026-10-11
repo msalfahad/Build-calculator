@@ -15,7 +15,7 @@
   "localOnly": "Saved in this browser"
  },
  "home": {
-  "title": "Kuwait Villa Cost Calculator",
+  "title": "Villa Cost Calculator",
   "subtitle": "Estimate the cost of building your villa in Kuwait — a quick, transparent preliminary budget.",
   "start": "Start estimate",
   "f1": "Fast",
@@ -501,7 +501,7 @@
  "admin": {
   "title": "Rate library",
   "sub": "Version-controlled ratebook. Changes are stored in this browser only (local V1).",
-  "localNote": "Local administration: no login in this standalone version. Do not deploy publicly without authentication.",
+  "localNote": "Changes you make here are saved for you only — nobody else who opens this calculator sees them. Shared, company-wide prices need a secured backend.",
   "addRate": "Add rate",
   "editRate": "Edit rate",
   "id": "Rate ID",
